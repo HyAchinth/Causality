@@ -42,8 +42,7 @@ def plot(sigma=1,min=-5,max=5,num=200):         #Test by plotting our F(X) vs pd
         ker.append(r.F(i,sigma))            
         xax.append(i)
         gdf.append(pdf(i))
-    #print(xax)
-    print(len(xax))
+            
     plt.plot(xax,ker,label = 'F(X),sigma='+str(sigma))
     plt.plot(xax,gdf,label = 'pdf(X)', color= '#000000')
     plt.legend()
