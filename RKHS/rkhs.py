@@ -1,4 +1,6 @@
 import math
+import numpy as np 
+from mpmath import *
 import matplotlib.pyplot as plt
 from array import *
 from getData import DataReader                                          
@@ -23,12 +25,28 @@ class RKHS:
             sum += val
         return sum/len(self.data)
 
-def plot(sigma=1):                          # Very basic testing function to plot in a [-20, 20] range
-    arr = array('f',[])                     # Vary sigma and observe the effect on the graph
+
+def pdf(x,u1=2,u2=-2,s=1):              # Actual PDF fuction for the sum of logistic(u1,s) and logistic(u2,s) distributions. 
+                        
+    return ((1/(4*s))*sech((x-u1)/(2*s)) + (1/(4*s))*sech((x-u2)/(2*s)))/2
+
+
+def plot(sigma=1,min=-5,max=5,num=200):         #Test by plotting our F(X) vs pdf(X). X= [min,....,max] n(X)=num                          
+    ker = []                                
+    xax = []                                    #ker = [F(x1),....,F(xn)], xax = [x1,....,xn] {x-axis} , gdf =[gdf(x1),....,gdf(xn)]
+    gdf = []
     r = RKHS(X)
-    for i in range(-20,20,1):
-        arr.append(r.F(i,sigma))            # add F(i) to arr. -20<i<20
-    plt.plot(arr)
+    step = (max-min)/num
+    print(step)
+    for i in np.arange(min,max+step,step):
+        ker.append(r.F(i,sigma))            
+        xax.append(i)
+        gdf.append(pdf(i))
+    #print(xax)
+    print(len(xax))
+    plt.plot(xax,ker,label = 'F(X),sigma='+str(sigma))
+    plt.plot(xax,gdf,label = 'pdf(X)', color= '#000000')
+    plt.legend()
     plt.show()
 
-plot(0.2)
+plot(1.2,-5,5)
