@@ -28,10 +28,10 @@ class RKHS:
 
 def pdf(x,u1=2,u2=-2,s=1):              # Actual PDF fuction for the sum of logistic(u1,s) and logistic(u2,s) distributions. 
                         
-    return ((1/(4*s))*sech((x-u1)/(2*s)) + (1/(4*s))*sech((x-u2)/(2*s)))/2
+    return ((1/(4*s))*sech((x-u1)/(2*s))**2 + (1/(4*s))*sech((x-u2)/(2*s))**2)/2
 
 
-def plot(sigma=1,min=-5,max=5,num=200):         #Test by plotting our F(X) vs pdf(X). X= [min,....,max] n(X)=num                          
+def plot(sigma=1,min=-5,max=5,num=200,s=1):         #Test by plotting our F(X) vs pdf(X). X= [min,....,max] n(X)=num                          
     ker = []                                
     xax = []                                    #ker = [F(x1),....,F(xn)], xax = [x1,....,xn] {x-axis} , gdf =[pdf(x1),....,pdf(xn)]
     gdf = []
@@ -41,11 +41,11 @@ def plot(sigma=1,min=-5,max=5,num=200):         #Test by plotting our F(X) vs pd
     for i in np.arange(min,max+step,step):
         ker.append(r.F(i,sigma))            
         xax.append(i)
-        gdf.append(pdf(i))
+        gdf.append(pdf(i,2,-2,s))
 
     plt.plot(xax,ker,label = 'F(X),sigma='+str(sigma))
-    plt.plot(xax,gdf,label = 'pdf(X)', color= '#000000')
+    plt.plot(xax,gdf,label = 'pdf(X),scale='+str(s), color= '#000000')
     plt.legend()
     plt.show()
 
-plot(0.2)
+plot(0.6,-5,5,200,0.5)
