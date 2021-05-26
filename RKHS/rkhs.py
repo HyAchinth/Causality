@@ -33,7 +33,7 @@ def pdf(x,u1=2,u2=-2,s=1):              # Actual PDF fuction for the sum of logi
 
 def plot(sigma=1,min=-5,max=5,num=200):         #Test by plotting our F(X) vs pdf(X). X= [min,....,max] n(X)=num                          
     ker = []                                
-    xax = []                                    #ker = [F(x1),....,F(xn)], xax = [x1,....,xn] {x-axis} , gdf =[gdf(x1),....,gdf(xn)]
+    xax = []                                    #ker = [F(x1),....,F(xn)], xax = [x1,....,xn] {x-axis} , gdf =[pdf(x1),....,pdf(xn)]
     gdf = []
     r = RKHS(X)
     step = (max-min)/num
@@ -42,10 +42,10 @@ def plot(sigma=1,min=-5,max=5,num=200):         #Test by plotting our F(X) vs pd
         ker.append(r.F(i,sigma))            
         xax.append(i)
         gdf.append(pdf(i))
-            
+
     plt.plot(xax,ker,label = 'F(X),sigma='+str(sigma))
     plt.plot(xax,gdf,label = 'pdf(X)', color= '#000000')
     plt.legend()
     plt.show()
 
-plot(1.2,-5,5)
+plot(0.2)
