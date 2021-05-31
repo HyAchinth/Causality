@@ -48,4 +48,4 @@ def plot(sigma=1,min=-5,max=5,num=200,s=1):         #Test by plotting our F(X) v
     plt.legend()
     plt.show()
 
-plot(0.6,-5,5,200,0.5)
+plot(0.2,-5,5,200,1)

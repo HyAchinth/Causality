@@ -2,7 +2,7 @@ from math import e, sqrt, pi, erf, erfc, log
 from scipy.special import erfinv
 import sys
 if '.' not in sys.path:
-    sys.path.append('.')
+    sys.path.append('../')
 import time
 from synth import getData
 import matplotlib.pyplot as plt
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     if (len(args) > 1):
         test = args[1]
     else:
-        test = 'models/rkhsTest.csv'
+        test = '../models/rkhsTest.csv'
     d = getData.DataReader(test)
     data = d.read()
     X = data['X']
