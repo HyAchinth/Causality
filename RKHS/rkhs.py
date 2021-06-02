@@ -35,7 +35,7 @@ class RKHS:
         for i in self.data:
             val = self.ksaw(x,i)
             sum += val
-        return sum/len(X)
+        return sum/len(self.data)
 
     def kpol(self,x1,x2=0,i=2,c=0):
 
@@ -68,7 +68,7 @@ def plot(sigma=1,min=-5,max=5,num=200,s=1):         #Test by plotting our F(X) v
     for i in range(1,1001):
         Y.append(random.uniform(-1,1))
 
-    r = RKHS(Y)
+    r = RKHS(X)
     step = (max-min)/num
     #print(step)
     for i in np.arange(min,max+step,step):

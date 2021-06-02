@@ -142,3 +142,4 @@ cython_debug/
 
 # settings
 *.vscode
+*.pyc
