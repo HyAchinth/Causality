@@ -14,12 +14,12 @@ testDescript = 'random distrubution'
 # - List of Parents
 # - isObserved (Optional, default True)
 # - Data Type (Optional, default 'Numeric')  
-model =    [('X', []),'Y'
+model =    ['X','Y',
 			]
 
 varEquations = [
-			    'X = abs(logistic(2,1))'
-				'Y = sqrt(X)'
+			    'X = logistic(2,1)',
+				'Y = X**2'
 		        ]
 
 
