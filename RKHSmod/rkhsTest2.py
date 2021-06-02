@@ -1,12 +1,22 @@
 from math import e, sqrt, pi, erf, erfc, log
 from scipy.special import erfinv
 import sys
-if '.' not in sys.path:
-    sys.path.append('../')
+sys.path.append('../')
 import time
 from synth import getData
 import matplotlib.pyplot as plt
 from RKHSmod.rkhs import RKHS
+
+def ksaw(x1,x2=0, kparms=[]):
+    p = kparms[0]    
+    return max(0, (1 - (abs(x1 - x2) * p)) * p)
+
+def fsaw(x,X, kparms=[]):    
+    sum = 0.0
+    for i in X:
+        val = ksaw(x,i,kparms)
+        sum += val
+    return sum/len(X)
 
 def kQuant(x1, x2=0, kparms=[]):
     sigma = kparms[0]
@@ -96,19 +106,20 @@ if __name__ == '__main__':
         ctfp = testFCDF(tp)
         ctfs.append(ctfp)
         tp += interval
-    delta = 2
+    delta = None
     start = time.time()
     for size in dataSizes:
-        # Choose a reasonable sigma based on data size.
+        #Choose a reasonable sigma based on data size.
         sigma = 1 / log(size, 4)
         r1 = RKHS(X[:size], kparms=[sigma, delta])
+        #r1 = RKHS(X[:size],k = ksaw, f = fsaw, kparms=[1.5, delta]) #Sawtooth kernel
         r2 = RKHS(X[:size], k=kcdf, f=Fcdf, kparms=[sigma, delta])
         fs = []  # The results using a pdf kernel
         fsc = [] # Results using a cdf kernel
         totalErr = 0
         deviations = []
         for i in range(len(testPoints)):
-            p = testPoints[i]
+            p = testPoints[i]            
             fp = r1.F(p)
             fs.append(fp)
             fpc = r2.F(p)
@@ -137,12 +148,10 @@ if __name__ == '__main__':
     for t in range(len(traces)):
         fs = traces[t]
         size = dataSizes[int(t/2)] # traces are alternately pdf and cdf
-        if t%2 == 0:
+        if True:
             label = 'pdf(X)-size=' + str(size)
             linestyle = 'solid'
-        else:
-            label = 'cdf(X)-size=' + str(size)
-            linestyle = 'dashed'
+        
         plt.plot(testPoints, fs, label=label, linestyle=linestyle)
     plt.plot(testPoints, tfs, label='testPDF(x)', color='#000000', linewidth=3, linestyle='solid')
     plt.plot(testPoints, ctfs, label='testCDF(x)', color='#000000', linewidth=3, linestyle='dotted')

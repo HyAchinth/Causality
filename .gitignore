@@ -143,3 +143,4 @@ cython_debug/
 # settings
 *.vscode
 *.pyc
+/rkhs.cpython-36.pyc
