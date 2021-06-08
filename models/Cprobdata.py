@@ -18,8 +18,8 @@ model =    ['X','Y',
 			]
 
 varEquations = [
-			    'X = logistic(2,1)',
-				'Y = X**2'
+			    'X = logistic(0,1)',
+				'Y = X**2 + normal(0,0.1)'
 		        ]
 
 
