@@ -128,20 +128,34 @@ if __name__ == '__main__':
     probpy = []
     cond = []
     start = time.time()
-
+    Perror = 0.0
+    Rerror = 0.0
+    Pdev = []
+    Rdev = []
     for i in range(numTP + 1):
-        testPoints.append(tp)
-        
+        testPoints.append(tp)        
         #p = ps.P(('Y', tp), [('X', x)])
-        p = ps.distr('Y', [('X', tp)]).E()
+        p = ps.distr('Y', [('X', tp)]).E()        
         probpy.append(p)
-        e = evalYx(tp,r1,r2)
-        print(tp,e,p)
+        e = evalYx(tp,r1,r2)        
         cond.append(e)
         r = square(tp)
-        sq.append(r)       
+        sq.append(r)
+        err1 = abs(r-p)
+        Pdev.append(err1)
+        err2 = abs(r-e)
+        Rdev.append(err2)
+        Perror += err1
+        Rerror += err2
+        print(tp,e,p,r,err1,err2)
         tp += interval
     
+    Pavg = Perror/numTP
+    Ravg = Rerror/numTP
+
+    print("Prob.py Average Error:",Pavg,sum(Pdev)/numTP,"Max error:",max(Pdev))
+    print("RKHS Average Error:",Ravg,sum(Rdev)/numTP,"Max error:",max(Rdev))
+
     plt.plot(testPoints,cond, label = 'RKHS Y|X')
     plt.plot(testPoints,sq, label = 'Ideal Curve')
     plt.plot(testPoints,probpy, label = 'ProbSpace Y|X')    
