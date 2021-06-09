@@ -87,6 +87,17 @@ def evalyx(y,x,r1,r2): #function to calculated E(y|x)
     return sum2/sum1
         
 
+def evalYx(x,r1,r2):
+    musum = psum = 0.0
+    for y in np.arange(-30,30,0.1):
+        #print(y)
+        PY_X = evalyx(y,x,r1,r2)
+        musum += PY_X * y
+        psum += PY_X
+    return musum/psum
+
+
+
 if __name__ == '__main__':
     path = '../models/Cprobdata.csv'
     d = getData.DataReader(path)
@@ -102,35 +113,43 @@ if __name__ == '__main__':
     r1 = RKHS(X,kparms=[sigma])
     r2 = RKHS(Y,kparms=[sigma])
 
-    x = 0.7
+    x = 1
     y = 0.04
 
-    print("P(y=",y,"|x=",x,") =",evalyx(y,x,r1,r2))
+    #print("P(y=",y,"|x=",x,") =",evalyx(y,x,r1,r2))
         
     testPoints = []
-    testMin = -2
-    testMax = 2
+    testMin = -5
+    testMax = 5
     tp = testMin
     numTP = 200
     interval = (testMax - testMin) / numTP
     sq = []
     probpy = []
     cond = []
+    start = time.time()
 
     for i in range(numTP + 1):
         testPoints.append(tp)
         
-        p = ps.P(('Y', tp), [('X', x)])
+        #p = ps.P(('Y', tp), [('X', x)])
+        p = ps.distr('Y', [('X', tp)]).E()
         probpy.append(p)
-        e = evalyx(tp,x,r1,r2)
-        cond.append(e)       
+        e = evalYx(tp,r1,r2)
+        print(tp,e,p)
+        cond.append(e)
+        r = square(tp)
+        sq.append(r)       
         tp += interval
     
-    plt.plot(testPoints,cond, label = 'RKHS y|x='+str(x))
-    plt.plot(testPoints,probpy, label = 'ProbSpace y|x='+str(x))    
+    plt.plot(testPoints,cond, label = 'RKHS Y|X')
+    plt.plot(testPoints,sq, label = 'Ideal Curve')
+    plt.plot(testPoints,probpy, label = 'ProbSpace Y|X')    
     plt.legend()
     plt.show()
+    end = time.time()
+    print('elapsed = ', end - start)
 
 
-    print("P(y=",y,"|x=",x,") =",evalyx(y,x,r1,r2))
+    #print("P(y=",y,"|x=",x,") =",evalYx(x,r1,r2))
     
