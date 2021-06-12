@@ -89,7 +89,7 @@ def evalyx(y,x,r1,r2): #function to calculated E(y|x)
 
 def evalYx(x,r1,r2):
     musum = psum = 0.0
-    for y in np.arange(-30,30,0.1):
+    for y in np.arange(20,90,1):
         #print(y)
         PY_X = evalyx(y,x,r1,r2)
         musum += PY_X * y
@@ -107,20 +107,11 @@ if __name__ == '__main__':
 
     ps = ProbSpace(data)
 
-    size = len(X)
-    sigma = 1 / math.log(size, 4)
-
-    r1 = RKHS(X,kparms=[sigma])
-    r2 = RKHS(Y,kparms=[sigma])
-
-    x = 1
-    y = 0.04
-
-    #print("P(y=",y,"|x=",x,") =",evalyx(y,x,r1,r2))
-        
+    size = len(X)    
+   
     testPoints = []
-    testMin = -5
-    testMax = 5
+    testMin = 5
+    testMax = 9
     tp = testMin
     numTP = 200
     interval = (testMax - testMin) / numTP
@@ -128,42 +119,73 @@ if __name__ == '__main__':
     probpy = []
     cond = []
     start = time.time()
-    Perror = 0.0
-    Rerror = 0.0
+    Perror = 0.0    
     Pdev = []
-    Rdev = []
+    
     for i in range(numTP + 1):
-        testPoints.append(tp)        
-        #p = ps.P(('Y', tp), [('X', x)])
+        testPoints.append(tp)                
         p = ps.distr('Y', [('X', tp)]).E()        
-        probpy.append(p)
-        e = evalYx(tp,r1,r2)        
-        cond.append(e)
+        probpy.append(p)        
         r = square(tp)
         sq.append(r)
         err1 = abs(r-p)
-        Pdev.append(err1)
-        err2 = abs(r-e)
-        Rdev.append(err2)
-        Perror += err1
-        Rerror += err2
-        print(tp,e,p,r,err1,err2)
+        Pdev.append(err1)        
+        Perror += err1        
+        print(tp,p,r,err1)
         tp += interval
-    
+
     Pavg = Perror/numTP
-    Ravg = Rerror/numTP
 
-    print("Prob.py Average Error:",Pavg,sum(Pdev)/numTP,"Max error:",max(Pdev))
-    print("RKHS Average Error:",Ravg,sum(Rdev)/numTP,"Max error:",max(Rdev))
+    sigma = [0.1,0.2,0.5,1,1 / math.log(size, 4)]
 
-    plt.plot(testPoints,cond, label = 'RKHS Y|X')
+    SigmaErrors = []
+    MaxErrors = []
+    traces = []
+
+    for s in sigma:
+        r1 = RKHS(X,kparms=[s])
+        r2 = RKHS(Y,kparms=[s])
+        testPoints = []
+        testMin = 5
+        testMax = 9
+        tp = testMin
+        numTP = 200
+        interval = (testMax - testMin) / numTP
+        
+        Rdev = []
+        cond = []
+
+        for i in range(numTP + 1):
+            testPoints.append(tp)   
+            e = evalYx(tp,r1,r2)        
+            cond.append(e)
+            r = square(tp)            
+            err = abs(r-e)
+            Rdev.append(err)           
+            print(tp,e,r,err)
+            tp += interval
+
+        Ravg = sum(Rdev)/numTP
+        Rmax = max(Rdev)
+
+        SigmaErrors.append(Ravg)
+        MaxErrors.append(Rmax)
+        traces.append(cond)
+
+
+    print("Prob.py Average Error:",Pavg,"Max error:",max(Pdev))
+    for i in range(len(sigma)):
+        print("Sigma",sigma[i],"Average Error:",SigmaErrors[i],"Max error:",MaxErrors[i])
+        plt.plot(testPoints,traces[i], label = 'RKHS sigma='+str(sigma[i]))
+    
+    
+    end = time.time()
+    print('elapsed = ', end - start)    
     plt.plot(testPoints,sq, label = 'Ideal Curve')
     plt.plot(testPoints,probpy, label = 'ProbSpace Y|X')    
     plt.legend()
     plt.show()
-    end = time.time()
-    print('elapsed = ', end - start)
 
 
-    #print("P(y=",y,"|x=",x,") =",evalYx(x,r1,r2))
+    
     

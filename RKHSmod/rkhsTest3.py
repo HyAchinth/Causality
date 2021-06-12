@@ -12,19 +12,13 @@ def ksaw(x1,x2=0, kparms=[]):
     p = kparms[0]    
     return max(0, (1 - (abs(x1 - x2) * p)) * p)
 
-B = []
-def calcB():
-    global B
-    B = 
-    return 
-
 def fsaw(x,X, kparms=[]):
     
     sum = 0.0
     for i in X:
         val = ksaw(x,i,kparms)
-        sum += val*B[i]
-    return sum
+        sum += val
+    return sum/len(X)
 
 def kQuant(x1, x2=0, kparms=[]):
     sigma = kparms[0]
@@ -81,10 +75,6 @@ def testFCDF(x):
     result = (logisticCDF(x, -2, .5) + logisticCDF(x, 2, .5) + logisticCDF(x, -.5, .3)) / 3
     return result
 
-def P(y,x):
-    calcB(x)
-    result = F(y)
-    return result
 
 if __name__ == '__main__':
     args = sys.argv
@@ -97,7 +87,7 @@ if __name__ == '__main__':
     X = data['X']
     expmean = sum(X) / len(X)
     traces = []
-    dataSizes = [1,50, 100, 1000, 10000, 100000]
+    dataSizes = [50, 100, 1000, 10000, 100000]
     errs = {}
     maxDeviations = {}
     avgDeviations = {}
@@ -132,7 +122,7 @@ if __name__ == '__main__':
         deviations = []
         for i in range(len(testPoints)):
             p = testPoints[i]
-            calcB()
+            
             fp = r1.F(p)
             fs.append(fp)
             #fpc = r2.F(p)
@@ -160,7 +150,7 @@ if __name__ == '__main__':
     print('elapsed = ', end - start)
     for t in range(len(traces)):
         fs = traces[t]
-        size = dataSizes[int(t/2)] # traces are alternately pdf and cdf
+        size = dataSizes[t] # traces are alternately pdf and cdf
         if True:
             label = 'pdf(X)-size=' + str(size)
             linestyle = 'solid'
