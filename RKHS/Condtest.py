@@ -25,76 +25,78 @@ def F(x,X,kparms=[]):
 def square(x):
     return x**2 
 
-# if __name__ == '__main__':
-#     path = '../models/Cprobdata.csv'
-#     d = getData.DataReader(path)
-#     data = d.read()        
-#     X = data['X']
-#     Y = data['Y']
-
-#     ps = ProbSpace(data)
-    
-#     r = RKHS(Y,k = K, f = F, kparms=[2])
-
-    # testPoints = []
-    # testMin = -5
-    # testMax = 5
-    # tp = testMin
-    # numTP = 200
-    # interval = (testMax - testMin) / numTP
-    # sq = []
-    # probpy = []
-    # cond = []
-    
-#     # Generate a uniform range of test points, expected curve, prob.py curve
-    # for i in range(numTP + 1):
-    #     testPoints.append(tp)
-    #     y = square(tp)
-    #     sq.append(y)
-    #     p = ps.distr('Y', [('X', tp)]).E()
-    #     probpy.append(p)        
-    #     tp += interval
-
-#     #Generate the conditional distribution using RKHS
-#     # for i in range(len(testPoints)):
-#     #     p = testPoints[i]
-#     #     calcB(testPoints[i])            
-#     #     fp = r.F(p)
-#     #     cond.append(fp)
-
-
-#     #plot graph
-    # plt.plot(testPoints,sq, label = 'Ideal')
-    # plt.plot(testPoints,probpy, label = 'ProbSpace')
-    # plt.legend()
-    # plt.show()
-    
+  
 def evalyx(y,x,r1,r2): #function to calculated E(y|x)
     #sum1 contains sum(f(x)) and sum2 contains sum(f(y,x))  
     sum1 = 0    
     sum2 = 0
     size = len(r1.X)
+    r1bound = r1.kparms[0] * 3
+    r2bound = r2.kparms[0] * 3
     for i in range(size):
-        t1 = r1.K(x,r1.X[i])
-        sum1 += t1
-
-        t2 = r2.K(y,r2.X[i])        
-        sum2 += t1*t2
-        #print("x=",x,"y=",y,"X=",r1.X[i],"Y=",r2.X[i])
-    
-    # print("Sum-P(y,x) =",sum2)
-    # print("Sum-P(x) =",sum1)
+        if(abs(r1.X[i] - x) <= r1bound or abs(r2.X[i]-y) <= r2bound):
+            t1 = r1.K(x,r1.X[i])
+            sum1 += t1        
+            t2 = r2.K(y,r2.X[i])        
+            sum2 += t1*t2      
+    if sum1 == 0:
+        return 0
     return sum2/sum1
         
 
-def evalYx(x,r1,r2):
+def evalYx(x,r1,r2,choice=1,e=[]):
+    #calculate E(Y|x)
     musum = psum = 0.0
-    for y in np.arange(20,90,1):
-        #print(y)
-        PY_X = evalyx(y,x,r1,r2)
+    step = 0.5
+    for y in np.arange(20,90,step):        
+        if choice == 1:
+            PY_X = evalyx(y,x,r1,r2)
+        else:
+            PY_X = f(y,x,r1,r2,e)
         musum += PY_X * y
         psum += PY_X
+    if psum == 0: 
+        return 0
     return musum/psum
+
+
+#Functions for the 2step Estimator method
+#Final result is f (y | x)= g(y − m(x) | x)
+#so we define g and m functions:
+
+def m(x,r1,r2):
+    sum1 = 0    
+    sum2 = 0
+    size = len(r1.X)
+    for i in range(size):        
+        sum1 += r1.K(x,r1.X[i]) 
+        sum2 += r1.K(x,r1.X[i]) * r2.X[i]
+    
+    return sum2/sum1
+
+def residual(r1,r2):
+    e = []
+    size = len(r2.X)
+    for i in range(size):
+        
+        e.append(r2.X[i]-m(r1.X[i],r1,r2))
+    return e
+
+def f(y,x,r1,r2,e):    
+    sum1 = 0    
+    sum2 = 0
+    size = len(r1.X)
+    r1bound = r1.kparms[0] * 5
+    r2bound = r2.kparms[0] * 5
+    for i in range(size):
+        if(abs(r1.X[i] - x) <= r1bound and abs(r2.X[i]-y) <= r2bound):
+            t1 = r1.K(x,r1.X[i])
+            sum1 += t1
+            t2 = r2.K(y - m(x,r1,r2), e[i])
+            sum2 += t1*t2
+    if sum1 ==0:
+        return 0
+    return sum2/sum1
 
 
 
@@ -118,10 +120,12 @@ if __name__ == '__main__':
     sq = []
     probpy = []
     cond = []
-    start = time.time()
+    
     Perror = 0.0    
     Pdev = []
-    
+
+    start1 = time.time()
+
     for i in range(numTP + 1):
         testPoints.append(tp)                
         p = ps.distr('Y', [('X', tp)]).E()        
@@ -131,20 +135,43 @@ if __name__ == '__main__':
         err1 = abs(r-p)
         Pdev.append(err1)        
         Perror += err1        
-        print(tp,p,r,err1)
+        #print(tp,p,r,err1)
         tp += interval
+
+    end1 = time.time()
+    print("Prob.py Time:", end1-start1)
 
     Pavg = Perror/numTP
 
-    sigma = [0.1,0.2,0.5,1,1 / math.log(size, 4)]
+    sigma = [0.2,0.2]
 
     SigmaErrors = []
     MaxErrors = []
     traces = []
+    times = []
+
+    steps = [0,1]
+    j=0
+    e = []
+    print(len(e))
 
     for s in sigma:
         r1 = RKHS(X,kparms=[s])
         r2 = RKHS(Y,kparms=[s])
+        if len(e) == 0:
+            t1 = time.time()
+            e = residual(r1,r2)        
+            t2 = time.time()
+            print("Residual Calculation time: ",str(t2-t1))
+        # print(e)
+        # t1 = time.time()
+        # new=f(4,2,r1,r2,e)
+        # t2 = time.time()
+        # print("2 Step estimator time: "+str(t2-t1),str(new))
+        # t1 = time.time()
+        # old=evalyx(4,2,r1,r2)
+        # t2 = time.time()
+        # print("1 step estimator time: "+str(t2-t1),str(old))
         testPoints = []
         testMin = 5
         testMax = 9
@@ -154,33 +181,45 @@ if __name__ == '__main__':
         
         Rdev = []
         cond = []
+        start = time.time()
 
         for i in range(numTP + 1):
             testPoints.append(tp)   
-            e = evalYx(tp,r1,r2)        
-            cond.append(e)
+            ans = evalYx(tp,r1,r2,steps[j],e)
+            if ans != 0:
+                cond.append(ans)
+            else:
+                cond.append(cond[i-1])
             r = square(tp)            
-            err = abs(r-e)
+            err = abs(r-ans)
             Rdev.append(err)           
-            print(tp,e,r,err)
+            print(tp,ans,r,err)
             tp += interval
 
+        end = time.time()
+        
+        times.append(end - start)
+        
         Ravg = sum(Rdev)/numTP
         Rmax = max(Rdev)
-
+        j = j+1
         SigmaErrors.append(Ravg)
         MaxErrors.append(Rmax)
         traces.append(cond)
 
-
+    print("Prob.py Time:", end1-start1)
     print("Prob.py Average Error:",Pavg,"Max error:",max(Pdev))
     for i in range(len(sigma)):
-        print("Sigma",sigma[i],"Average Error:",SigmaErrors[i],"Max error:",MaxErrors[i])
-        plt.plot(testPoints,traces[i], label = 'RKHS sigma='+str(sigma[i]))
+        if steps[i] == 0:
+            str = '2 step estimator'
+        else:
+            str = '1 step estimator'
+        #print(str+"RKHS Sigma = ",sigma[i],"Average Error:",SigmaErrors[i],"Max error:",MaxErrors[i],"Time:",times[i])        
+        print(str,"Average Error:",SigmaErrors[i],"Max error:",MaxErrors[i],"Time:",times[i])        
+        #plt.plot(testPoints,traces[i], label = 'RKHS curve='+str(steps[i])+'sigma = '+ str(sigma[i]))
+        plt.plot(testPoints,traces[i], label = str)
     
-    
-    end = time.time()
-    print('elapsed = ', end - start)    
+        
     plt.plot(testPoints,sq, label = 'Ideal Curve')
     plt.plot(testPoints,probpy, label = 'ProbSpace Y|X')    
     plt.legend()
@@ -188,4 +227,5 @@ if __name__ == '__main__':
 
 
     
+
     
