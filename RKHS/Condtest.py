@@ -31,8 +31,8 @@ def evalyx(y,x,r1,r2): #function to calculated E(y|x)
     sum1 = 0    
     sum2 = 0
     size = len(r1.X)
-    r1bound = r1.kparms[0] * 3
-    r2bound = r2.kparms[0] * 3
+    r1bound = r1.kparms[0] * 5
+    r2bound = r2.kparms[0] * 5
     for i in range(size):
         if(abs(r1.X[i] - x) <= r1bound or abs(r2.X[i]-y) <= r2bound):
             t1 = r1.K(x,r1.X[i])
@@ -112,8 +112,8 @@ if __name__ == '__main__':
     size = len(X)    
    
     testPoints = []
-    testMin = 5
-    testMax = 9
+    testMin = -10
+    testMax = 10
     tp = testMin
     numTP = 200
     interval = (testMax - testMin) / numTP
@@ -143,7 +143,7 @@ if __name__ == '__main__':
 
     Pavg = Perror/numTP
 
-    sigma = [0.2,0.2]
+    sigma = [0.24]
 
     SigmaErrors = []
     MaxErrors = []
@@ -153,17 +153,25 @@ if __name__ == '__main__':
     steps = [0,1]
     j=0
     e = []
-    print(len(e))
+
+    # s = 1* size**(-1/5)
+    # R1 = RKHS(X,kparms=[s])
+    # R2 = RKHS(Y,kparms=[s])
+
+    # t1 = time.time()
+    # e = residual(R1,R2)        
+    # t2 = time.time()
+    # print("Residual Calculation time: ",str(t2-t1))    
 
     for s in sigma:
         r1 = RKHS(X,kparms=[s])
         r2 = RKHS(Y,kparms=[s])
-        if len(e) == 0:
-            t1 = time.time()
-            e = residual(r1,r2)        
-            t2 = time.time()
-            print("Residual Calculation time: ",str(t2-t1))
-        # print(e)
+        # if len(e) == 0:
+        #     t1 = time.time()
+        #     e = residual(r1,r2)        
+        #     t2 = time.time()
+        #     print("Residual Calculation time: ",str(t2-t1))
+        
         # t1 = time.time()
         # new=f(4,2,r1,r2,e)
         # t2 = time.time()
@@ -172,9 +180,11 @@ if __name__ == '__main__':
         # old=evalyx(4,2,r1,r2)
         # t2 = time.time()
         # print("1 step estimator time: "+str(t2-t1),str(old))
+
+
         testPoints = []
-        testMin = 5
-        testMax = 9
+        testMin = -10
+        testMax = 10
         tp = testMin
         numTP = 200
         interval = (testMax - testMin) / numTP
@@ -185,7 +195,8 @@ if __name__ == '__main__':
 
         for i in range(numTP + 1):
             testPoints.append(tp)   
-            ans = evalYx(tp,r1,r2,steps[j],e)
+            #ans = evalYx(tp,r1,r2,steps[j],e)
+            ans = m(tp,r1,r2)
             if ans != 0:
                 cond.append(ans)
             else:
@@ -210,14 +221,16 @@ if __name__ == '__main__':
     print("Prob.py Time:", end1-start1)
     print("Prob.py Average Error:",Pavg,"Max error:",max(Pdev))
     for i in range(len(sigma)):
-        if steps[i] == 0:
-            str = '2 step estimator'
-        else:
-            str = '1 step estimator'
-        #print(str+"RKHS Sigma = ",sigma[i],"Average Error:",SigmaErrors[i],"Max error:",MaxErrors[i],"Time:",times[i])        
-        print(str,"Average Error:",SigmaErrors[i],"Max error:",MaxErrors[i],"Time:",times[i])        
-        #plt.plot(testPoints,traces[i], label = 'RKHS curve='+str(steps[i])+'sigma = '+ str(sigma[i]))
-        plt.plot(testPoints,traces[i], label = str)
+        # if steps[i] == 0:
+        #     string = '2 step estimator'
+        # else:
+        #     string = '1 step estimator'
+
+
+        print("RKHS Sigma = ",sigma[i],"Average Error:",SigmaErrors[i],"Max error:",MaxErrors[i],"Time:",times[i])        
+        #print(str,"Average Error:",SigmaErrors[i],"Max error:",MaxErrors[i],"Time:",times[i])        
+        plt.plot(testPoints,traces[i], label = 'RKHS curve sigma = '+ str(sigma[i]))
+        #plt.plot(testPoints,traces[i], label = str)
     
         
     plt.plot(testPoints,sq, label = 'Ideal Curve')
