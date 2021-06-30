@@ -1,4 +1,4 @@
-from math import e, sqrt, pi, erf, log
+from math import e, sqrt, pi 
 import numpy as np
 
 class RKHS:

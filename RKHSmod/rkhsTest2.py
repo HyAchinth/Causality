@@ -20,7 +20,7 @@ def fsaw(x,X, kparms=[]):
 
 def kQuant(x1, x2=0, kparms=[]):
     sigma = kparms[0]
-    return abs(x1-x2) + sigma * sqrt(2) * erfinv(2*.5-1)
+    return sigma * sqrt(2) * erfinv(2*abs(x1-x2)-1)
 
 def kcdf(x1, x2=0, kparms=[]):
     # CDF Kernel
@@ -114,6 +114,7 @@ if __name__ == '__main__':
         r1 = RKHS(X[:size], kparms=[sigma, delta])
         #r1 = RKHS(X[:size],k = ksaw, f = fsaw, kparms=[1.5, delta]) #Sawtooth kernel
         r2 = RKHS(X[:size], k=kcdf, f=Fcdf, kparms=[sigma, delta])
+        r3 = RKHS(X[:size], f=Fquant, k=kQuant, kparms=[sigma, None])
         fs = []  # The results using a pdf kernel
         fsc = [] # Results using a cdf kernel
         totalErr = 0
@@ -122,21 +123,23 @@ if __name__ == '__main__':
             p = testPoints[i]            
             fp = r1.F(p)
             fs.append(fp)
-            fpc = r2.F(p)
-            fsc.append(fpc)
+            fc = 0
+            if p > 0 and p < 1:
+                fc = r3.F(p)
+            fsc.append(fc)
             tfp = tfs[i]
             ctfp = ctfs[i]
             err = abs(fp - tfp)
             totalErr += err
             #print('fpc, ctfp = ', fpc, ctfp)
-            deviation = abs(fpc - ctfp)
+            deviation = abs(fc - ctfp)
             deviations.append(deviation)
         maxDeviations[size] = max(deviations)
         avgDeviations[size] = sum(deviations) / numTP
         errs[size] = totalErr / numTP
         traces.append(fs) # pdf trace
         traces.append(fsc) # cdf trace
-        r3 = RKHS(X[:size], f=Fquant, k=kQuant, kparms=[sigma, None])
+
         mean = r3.F(.5)
         means[size] = mean
     print('Average Errors = ', errs)
