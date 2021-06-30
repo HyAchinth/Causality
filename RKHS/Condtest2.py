@@ -31,8 +31,8 @@ def evalyx(y,x,r1,r2): #function to calculated E(y|x)
     sum1 = 0    
     sum2 = 0
     size = len(r1.X)
-    r1bound = r1.kparms[0] * 5
-    r2bound = r2.kparms[0] * 5
+    r1bound = r1.kparms[0] * 3
+    r2bound = r2.kparms[0] * 3
     for i in range(size):
         if(abs(r1.X[i] - x) <= r1bound and abs(r2.X[i]-y) <= r2bound):
             t1 = r1.K(x,r1.X[i])
@@ -47,7 +47,7 @@ def evalyx(y,x,r1,r2): #function to calculated E(y|x)
 def evalYx(x,r1,r2,choice=1,e=[]):
     #calculate E(Y|x)
     musum = psum = 0.0
-    step = 0.5
+    step = 1
     for y in np.arange(20,90,step):        
         if choice == 1:
             PY_X = evalyx(y,x,r1,r2)
@@ -86,8 +86,8 @@ def f(y,x,r1,r2,e):
     sum1 = 0    
     sum2 = 0
     size = len(r1.X)
-    r1bound = r1.kparms[0] * 5
-    r2bound = r2.kparms[0] * 5
+    r1bound = r1.kparms[0] * 3
+    r2bound = r2.kparms[0] * 3
     for i in range(size):
         if(abs(r1.X[i] - x) <= r1bound and abs(r2.X[i]-y) <= r2bound):
             t1 = r1.K(x,r1.X[i])
@@ -104,16 +104,17 @@ if __name__ == '__main__':
     path = '../models/Cprobdata.csv'
     d = getData.DataReader(path)
     data = d.read()        
-    X = data['X']
-    Y = data['Y']
-
+    X1 = data['X']
+    Y1 = data['Y']
+    X = X1[:7500]
+    Y = Y1[:7500]
     ps = ProbSpace(data)
 
     size = len(X)    
    
     testPoints = []
-    testMin = -10
-    testMax = 10
+    testMin = 5
+    testMax = 9
     tp = testMin
     numTP = 200
     interval = (testMax - testMin) / numTP
@@ -143,34 +144,42 @@ if __name__ == '__main__':
 
     Pavg = Perror/numTP
 
-    sigma = [0.24]
+    sigma = [0.2,0.2]
 
     SigmaErrors = []
     MaxErrors = []
     traces = []
     times = []
 
-    steps = [0,1]
+    choice = [0,1]
     j=0
     e = []
 
-    # s = 1* size**(-1/5)
-    # R1 = RKHS(X,kparms=[s])
-    # R2 = RKHS(Y,kparms=[s])
+    file = 'residual.txt'
 
-    # t1 = time.time()
-    # e = residual(R1,R2)        
-    # t2 = time.time()
-    # print("Residual Calculation time: ",str(t2-t1))    
+
+    s = 1* size**(-1/5)
+    R1 = RKHS(X,kparms=[s])
+    R2 = RKHS(Y,kparms=[s])
+
+    readfile = open("residual.txt","r")
+    e = readfile.read().splitlines()
+    for i in range(len(e)):
+        e[i] = float(e[i])
+    readfile.close()
+    
+    if len(e) == 0:
+        t1 = time.time()
+        e = residual(R1,R2)
+        filename = open("residual.txt","w")    
+        np.savetxt(filename,e)
+        filename.close()        
+        t2 = time.time()
+        print("Residual Calculation time: ",str(t2-t1))    
 
     for s in sigma:
         r1 = RKHS(X,kparms=[s])
         r2 = RKHS(Y,kparms=[s])
-        # if len(e) == 0:
-        #     t1 = time.time()
-        #     e = residual(r1,r2)        
-        #     t2 = time.time()
-        #     print("Residual Calculation time: ",str(t2-t1))
         
         # t1 = time.time()
         # new=f(4,2,r1,r2,e)
@@ -183,8 +192,8 @@ if __name__ == '__main__':
 
 
         testPoints = []
-        testMin = -10
-        testMax = 10
+        testMin = 5
+        testMax = 9
         tp = testMin
         numTP = 200
         interval = (testMax - testMin) / numTP
@@ -195,10 +204,12 @@ if __name__ == '__main__':
 
         for i in range(numTP + 1):
             testPoints.append(tp)   
-            #ans = evalYx(tp,r1,r2,steps[j],e)
-            ans = m(tp,r1,r2)
+            ans = evalYx(tp,r1,r2,choice[j],e)
+            #ans = m(tp,r1,r2)
             if ans != 0:
                 cond.append(ans)
+            elif i== 0:
+                cond.append(0)
             else:
                 cond.append(cond[i-1])
             r = square(tp)            
@@ -221,16 +232,16 @@ if __name__ == '__main__':
     print("Prob.py Time:", end1-start1)
     print("Prob.py Average Error:",Pavg,"Max error:",max(Pdev))
     for i in range(len(sigma)):
-        # if steps[i] == 0:
-        #     string = '2 step estimator'
-        # else:
-        #     string = '1 step estimator'
+        if choice[i] == 0:
+            string = '2 step estimator'
+        else:
+            string = '1 step estimator'
 
 
-        print("RKHS Sigma = ",sigma[i],"Average Error:",SigmaErrors[i],"Max error:",MaxErrors[i],"Time:",times[i])        
-        #print(str,"Average Error:",SigmaErrors[i],"Max error:",MaxErrors[i],"Time:",times[i])        
-        plt.plot(testPoints,traces[i], label = 'RKHS curve sigma = '+ str(sigma[i]))
-        #plt.plot(testPoints,traces[i], label = str)
+        #print("RKHS Sigma = ",sigma[i],"Average Error:",SigmaErrors[i],"Max error:",MaxErrors[i],"Time:",times[i])        
+        print(string,"Average Error:",SigmaErrors[i],"Max error:",MaxErrors[i],"Time:",times[i])        
+        #plt.plot(testPoints,traces[i], label = 'RKHS curve sigma = '+ str(sigma[i]))
+        plt.plot(testPoints,traces[i], label = string)
     
         
     plt.plot(testPoints,sq, label = 'Ideal Curve')

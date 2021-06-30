@@ -144,3 +144,4 @@ cython_debug/
 *.vscode
 *.pyc
 /rkhs.cpython-36.pyc
+residual.txt
