@@ -74,6 +74,7 @@ class RFFGaussianProcessRegressor:
         """Return random Fourier features based on data X, as well as random
         variables W and b.
         """
+        np.random.seed(2)
         N, D = X.shape
         print(X.shape)
         if self.W_ is not None:
@@ -93,6 +94,7 @@ class RFFGaussianProcessRegressor:
         """On first call, return random variables W and b. Else, return cached
         values.
         """
+        np.random.seed(2)
         if self.W_ is not None:
             return self.W_, self.b_
         W = np.random.normal(loc=0, scale=1, size=(self.rff_dim, D))

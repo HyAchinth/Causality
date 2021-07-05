@@ -18,19 +18,19 @@ X1 = data['X']
 Y1 = data['Y']
 
 Datasize = len(X1)
-Featsize = 25
+Featsize = 100
 Featsize2 = int(Datasize/10)
 
 X = np.reshape(X1[:Datasize],(Datasize,1))
 Y = np.reshape(Y1[:Datasize],(Datasize,1))
 
-sigma = 0.24
+sigma = 0.2
 
 #Ideal Curve calculation
 
 testPoints = []
-testMin = 3
-testMax = 9
+testMin = 5
+testMax = 10   
 tp = testMin
 numTP = 200
 interval = (testMax - testMin) / numTP
@@ -74,25 +74,11 @@ for i in range(numTP + 1):
 t2 = time.time()
 RKHSEXtime = t2-t1
 
-#RKHS Calculation - P(Y=y|X=x)
-
-t1 = time.time()
-r1 = RKHS(X1,kparms=[sigma])
-r2 = RKHS(Y1,kparms=[sigma])
-tp = testMin
-for i in range(numTP + 1):
-    r = evalYx(tp,r1,r2,min=testMin,max=testMax)
-    rkhsPX.append(r)
-    tp += interval
-t2 = time.time()
-RKHSPXtime = t2-t1
-
-
 
 #RFF Calculation
 
 t1 = time.time()
-R = RFFGaussianProcessRegressor(rff_dim=Featsize,sigma=0.24)
+R = RFFGaussianProcessRegressor(rff_dim=Featsize,sigma=0.2)
 R.fit(X,Y)
 Xt = np.reshape(testPoints,(numTP+1,1))
 y_mean, y_cov = R.predict(Xt)
@@ -101,7 +87,7 @@ RFFtime = t2-t1
 
 #RFF Calculation-2
 t1 = time.time()
-R2 = RFFGaussianProcessRegressor(rff_dim=Featsize2,sigma=0.24)
+R2 = RFFGaussianProcessRegressor(rff_dim=Featsize2,sigma=0.2)
 R2.fit(X,Y)
 Xt = np.reshape(testPoints,(numTP+1,1))
 y_mean2, y_cov2 = R2.predict(Xt)
@@ -120,13 +106,12 @@ for i in range(len(y_mean)):
     Pdev.append(err1)    
     rerr = abs(rkhsEX[i]-sq[i])
     RKHSEXdev.append(rerr)
-    rerr = abs(rkhsPX[i]-sq[i])
-    RKHSPXdev.append(rerr)
+    
 
 #Print Results
 print('Probpy       time taken :',str(Probtime),'  \tAverage Error: ',sum(Pdev)/len(Pdev))
 print('RKHS-E(X)    time taken :',str(RKHSEXtime),'  \tAverage Error: ',sum(RKHSEXdev)/len(RKHSEXdev))
-print('RKHS-P(X)    time taken :',str(RKHSPXtime),'  \tAverage Error: ',sum(RKHSPXdev)/len(RKHSPXdev))
+
 print('RFF          time taken :',str(RFFtime),'  \tAverage Error: ',str(sum(RFFdev)[0]/len(RFFdev)))
 print('RFF(N/10)    time taken :',str(RFFtime2),'  \tAverage Error: ',str(sum(RFFdev2)[0]/len(RFFdev2)))
 
@@ -137,7 +122,7 @@ RFFstring2 = 'RFF curve, num(F) = N/10 =' + str(Featsize2)
 plt.plot(testPoints,y_mean, label = RFFstring)
 plt.plot(testPoints,y_mean2, label = RFFstring2)
 plt.plot(testPoints,rkhsEX, label = 'RKHS curve-E(X|Y=y)')
-plt.plot(testPoints,rkhsPX, label = 'RKHS curve-P(X=x|Y=y)')
+
 plt.plot(testPoints,probpy, label = 'Probpy curve')
 plt.plot(testPoints,sq, label = 'Ideal curve',color='#000000', linewidth=2, linestyle='solid')
 plt.legend()

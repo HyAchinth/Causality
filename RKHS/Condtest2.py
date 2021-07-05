@@ -44,11 +44,11 @@ def evalyx(y,x,r1,r2): #function to calculated E(y|x)
     return sum2/sum1
         
 
-def evalYx(x,r1,r2,choice=1,e=[]):
+def evalYx(x,r1,r2,min=0,max=100,choice=1,e=[]):
     #calculate E(Y|x)
     musum = psum = 0.0
     step = 1
-    for y in np.arange(20,90,step):        
+    for y in np.arange(min**2-min,max**2+max,step):        
         if choice == 1:
             PY_X = evalyx(y,x,r1,r2)
         else:
