@@ -7,6 +7,7 @@ http://gregorygundersen.com/blog/2019/12/23/random-fourier-features/
 ============================================================================"""
 
 import numpy as np
+from numpy.core.fromnumeric import shape
 from   scipy.spatial.distance import pdist, cdist, squareform
 from   scipy.linalg import cholesky, cho_solve
 
@@ -36,6 +37,9 @@ class RFFGaussianProcessRegressor:
         # Build kernel approximation using RFFs.
         N, _    = X.shape
         Z, W, b = self._get_rffs(X, return_vars=True)
+        
+        # print('X=',X,'Z=',Z,'W=',W)
+        # print(shape(X),shape(Z),shape(W))
         sigma_I = self.sigma * np.eye(N)
         self.kernel_ = Z.T @ Z + sigma_I
 
@@ -76,7 +80,7 @@ class RFFGaussianProcessRegressor:
         """
         np.random.seed(2)
         N, D = X.shape
-        print(X.shape)
+        #print(X.shape)
         if self.W_ is not None:
             W, b = self.W_, self.b_
         else:

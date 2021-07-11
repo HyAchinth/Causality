@@ -11,7 +11,12 @@ from Condtest2 import *
 from RKHSmod.rkhs import RKHS
 
 
-path = '../models/Cprobdata.csv'
+def tanh(x):
+    return math.sinh(x)
+    #return math.exp(x)
+    #return (math.tanh(x) + x*x)
+
+path = '../models/Cprobdata2.csv'
 d = getData.DataReader(path)
 data = d.read()        
 X1 = data['X']
@@ -29,8 +34,8 @@ sigma = 0.2
 #Ideal Curve calculation
 
 testPoints = []
-testMin = 5
-testMax = 10   
+testMin = 0
+testMax = 7  
 tp = testMin
 numTP = 200
 interval = (testMax - testMin) / numTP
@@ -45,7 +50,8 @@ RKHSPXdev = []
 
 for i in range(numTP + 1):
     testPoints.append(tp)
-    ideal = square(tp)
+    #ideal = square(tp)
+    ideal = tanh(tp)
     sq.append(ideal)
     tp += interval
 
