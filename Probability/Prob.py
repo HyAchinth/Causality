@@ -70,20 +70,18 @@ class ProbSpace:
         self.probCache = {} # Probability cache
         self.distrCache = {} # Distribution cache
         self.fieldAggs = self.getAgg(ds)
-        if discSpecs:
-            self.discSpecs = self.fixupDiscSpecs(discSpecs)
-            self.discretized = self.discretize()
-        else:
-            self.discSpecs = self.calcDiscSpecs()
-            self.discretized = self.discretize()
+        if self.N:
+            if discSpecs:
+                self.discSpecs = self.fixupDiscSpecs(discSpecs)
+                self.discretized = self.discretize()
+            else:
+                self.discSpecs = self.calcDiscSpecs()
+                self.discretized = self.discretize()
         # For SubSpaces only
         # parentProb is the probability of the subspace within the parent space
         self.parentProb = None
         # Parent Query is the query on the parents space that resulted in the subspace.
         self.parentQuery = None
-        if self.N == 0:
-            print('ProbSpace.__init__: Empty Probability Space.')
-
 
     def getAgg(self, ds):
         fieldList = list(ds.keys())
@@ -107,8 +105,12 @@ class ProbSpace:
         discSpecs = []
         for i in range(len(self.fieldList)):
             var = self.fieldList[i]
-            minV = np.min(self.aData[i])
-            maxV = np.max(self.aData[i])
+            if self.N > 0:
+                minV = np.min(self.aData[i])
+                maxV = np.max(self.aData[i])
+            else:
+                minV = 0
+                maxV = 0
             isDiscrete = var in self._discreteVars
             if isDiscrete:
                 minV = int(minV)
@@ -261,7 +263,7 @@ class ProbSpace:
                 if self.isDiscrete(var) or len(filt) == 3:
                     filtSpec2.append(filt)
                 else:
-                    # Progressive var
+                    # Progressive
                     val = filt[1]
                     aggs = self.fieldAggs[var]  # Field aggregates
                     std = aggs[3] # Standard deviation
@@ -345,6 +347,8 @@ class ProbSpace:
             for format)
         """
         d = self.distr(target, givensSpec, power=power)
+        if d.N == 0:
+            return None
         return d.E()
 
     def prob(self, targetSpec, givenSpec=None):
@@ -407,7 +411,6 @@ class ProbSpace:
             assert len(targetSpecU) == 0, 'prob.P: All target specifications must be bound (i.e. specified as tuples).  For unbound returns, use distr.)'
             result = self.jointProb(targetSpec, givenSpec)
             self.probCache[cacheKey] = result
-            return result
         else:
             rvName = targetSpec[0]
             if len(targetSpec) == 2:
@@ -415,9 +418,12 @@ class ProbSpace:
             else:
                 valSpec = targetSpec[1:]
             d = self.distr(rvName, givenSpec)
-            result = d.P(valSpec)
+            if d.N > 0:
+                result = d.P(valSpec)
+            else:
+                result = None
             self.probCache[cacheKey] = result
-            return result
+        return result
 
     P = prob
 
@@ -646,7 +652,6 @@ class ProbSpace:
                 # Nothing to conditionalize on.  We can just return the selected variable
                 # from the filtered distribution
                 filtSpace = self.SubSpace(filtSpecs, density = self.density, power = self.power, minPoints = 100, maxPoints = sqrt(self.N))
-                mean = filtSpace.aData[indx,:].mean()
                 #print('filtspace.N, parentQuery = ', filtSpace.N, filtSpace.parentQuery)
                 outPDF = filtSpace.distr(rvName)
             else:
@@ -1171,7 +1176,7 @@ class ProbSpace:
         plotDict = {}
         minX = inf
         maxX = -inf
-        numPts = 1000
+        numPts = 200
         pdfs = []
         for v in self.fieldList:
             d = self.distr(v)
