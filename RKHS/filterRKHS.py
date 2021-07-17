@@ -8,6 +8,8 @@ from synth import getData
 from numpy import *
 from RKHSmod.rkhs import RKHS
 from Condtest2 import *
+import time
+from math import *
 
 def ref(x,choice):
     if choice == 1:
@@ -15,8 +17,10 @@ def ref(x,choice):
     else:
         return math.sin(x) + math.tanh(conditional)
 
-
-    
+def kcdf(x1, x2=0, kparms=[]):
+    # CDF Kernel
+    sigma = kparms[0]
+    return (1 + erf(abs(x2-x1)/sigma*sqrt(2))) / 2   
 
 
 path = '../models/Cprobdata2.csv'
@@ -26,11 +30,12 @@ data = d.read()
 P = ProbSpace(data)
 
 #conditional X value
-conditional = 0
+conditional = 3
 
-#choice X=1(tanh) , Y=0(sinh) (choose 1 to condition on X, 0 for Y)
+#choice 1=X(tanh) , 0=Y(sinh) (choose 1 to condition on X, 0 for Y)
 choice = 1
 
+rtime1 = time.time()
 if choice == 1:
     FilterData, parentProb, finalQuery = P.filter([('X',conditional)])
 else:
@@ -39,6 +44,7 @@ else:
 X = FilterData['X']
 Y = FilterData['Y']
 Z = FilterData['Z']
+
 
 filterlen = len(Z)
 
@@ -50,10 +56,18 @@ else:
     r1 = RKHS(Y,kparms=[s])
 
 r2 = RKHS(Z,kparms=[s])
+rtime2 = time.time()
+Rtime = rtime2 - rtime1
+
+Ptime = 0
 
 testPoints = []
-testMin = -10
-testMax = 10
+if choice == 1:
+    testMin = -10
+    testMax = 10
+else:
+    testMin = -6
+    testMax = 6
 tp = testMin
 numTP = 200
 interval = (testMax - testMin) / numTP
@@ -71,6 +85,7 @@ Sqmean = []
 for i in range(numTP + 1):
     testPoints.append(tp)   
     #ans = evalYx(tp,r1,r2,choice[j],e)
+    t1 = time.time()
     ans = m(tp,r1,r2)
     if ans != 0:
         cond.append(ans)
@@ -78,11 +93,18 @@ for i in range(numTP + 1):
         cond.append(0)
     else:
         cond.append(cond[i-1])
+    t2 = time.time()
+    Rtime =Rtime + (t2-t1)
+    
+    t1 = time.time()
     if choice ==0:
         p = P.distr('Z', [('X', tp), ('Y', conditional)]).E()
     else:
         p = P.distr('Z', [('Y', tp), ('X', conditional)]).E()
-    Probpy.append(p)        
+    Probpy.append(p)
+    t2 = time.time()
+    Ptime = Ptime + (t2-t1)
+         
     r = ref(tp,choice)
     ideal.append(r)            
     err = abs(r-ans)
@@ -103,10 +125,13 @@ R2probpy = 1 - sum(PSqerr)/sum(Sqmean)
 
 
 print("Filtered Datasize:",filterlen)
-print("Filter-RKHS\tAverage Error:",sum(Rdev)/len(Rdev),"\tR2 error:",R2rkhs)
-print("ProbSpace \tAverage Error:",sum(Pdev)/len(Pdev),"\tR2 error:",R2probpy)
+print("Filter-RKHS\tAverage Error:",sum(Rdev)/len(Rdev),"\tR2 error:",R2rkhs,"\ttime:",Rtime)
+print("ProbSpace \tAverage Error:",sum(Pdev)/len(Pdev),"\tR2 error:",R2probpy,"\ttime:",Ptime)
 
-labelstr = 'Filter-RKHS Z|X,Y='+str(conditional)
+if choice == 0:
+    labelstr = 'Filter-RKHS Z|X,Y='+str(conditional)
+else:
+    labelstr = 'Filter-RKHS Z|Y,X='+str(conditional)
 
 plt.plot(testPoints,ideal, label = 'Ideal Curve',color='#000000')
 plt.plot(testPoints,Probpy, label = 'ProbSPace')
