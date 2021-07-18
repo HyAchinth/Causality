@@ -1,4 +1,5 @@
 #Implementation of Random features and comparision with kernel methods
+#from RKHS.filterRKHS import RSqerr, Sqmean
 import math
 import numpy as np
 from scipy.special import erfinv
@@ -88,9 +89,48 @@ if __name__ == '__main__':
     t2= time.time()
     Trff = t2-t1
 
-    print("RFF time:\t",Trff)
-    print("RKHS time:\t",Trkhs)
-    print("Probpy time:\t",Tprob)
+    #Errors Calculation
+
+    Rdev= []
+    Pdev = []
+    Fdev = []
+
+    
+    for i in range(numTP + 1):
+        ans = sq[i]
+        r = cond[i]
+        p = Probpy[i]
+        ff = matrff[i]
+        err = abs(r-ans)
+        Rdev.append(err)
+        err2 = abs(p-ans)
+        Pdev.append(err2)
+        err3 = abs(ff - ans)
+        Fdev.append(err3)
+
+    ymean = sum(sq)/len(sq)
+
+    RSqerr = []
+    PSqerr = []
+    FSqerr = []
+    Sqmean = []
+
+    for i in range(numTP + 1):
+        RSqerr.append(Rdev[i]**2)
+        PSqerr.append(Pdev[i]**2)
+        FSqerr.append(Fdev[i]**2)
+        Sqmean.append((sq[i]-ymean)**2)
+
+    R2rkhs = 1 - sum(RSqerr)/sum(Sqmean)
+    R2probpy = 1 - sum(PSqerr)/sum(Sqmean)
+    R2rff = 1 - sum(FSqerr)/sum(Sqmean)
+
+
+    Aerr = sum(Fdev)/len(Fdev)
+
+    print("RFF time:\t",Trff,"\tR2 = ",R2rff[0],"\tavg err:",Aerr[0])
+    print("RKHS time:\t",Trkhs,"\tR2 = ",R2rkhs,"\tavg err:",sum(Rdev)/len(Rdev))
+    print("Probpy time:\t",Tprob,"\tR2 = ",R2probpy,"\tavg err:",sum(Pdev)/len(Pdev))
 
     plt.plot(testPoints,sq, label = 'Ideal Curve')
     plt.plot(testPoints,cond, label = 'RKHS Curve')
