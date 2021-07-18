@@ -27,6 +27,26 @@ class RFFGaussianProcessRegressor:
         self.alpha_  = None
         self.b_      = None
         self.W_      = None
+        
+    def _get_rffs(self, X, return_vars):
+        """Return random Fourier features based on data X, as well as random
+        variables W and b.
+        """
+        np.random.seed(2)
+        N, D = X.shape
+        #print(X.shape)
+        if self.W_ is not None:
+            W, b = self.W_, self.b_
+        else:
+            W = np.random.normal(loc=0, scale=1, size=(self.rff_dim, D))
+            b = np.random.uniform(0, 2*np.pi, size=self.rff_dim)
+
+        B    = np.repeat(b[:, np.newaxis], N, axis=1)
+        norm = 1./ np.sqrt(self.rff_dim)
+        Z    = norm * np.sqrt(2) * np.cos(self.sigma * W @ X.T + B)
+        if return_vars:
+            return Z, W, b
+        return Z
 
     def fit(self, X, y):
         """Fit model with training data X and target y.
@@ -74,25 +94,6 @@ class RFFGaussianProcessRegressor:
 
         return y_mean, y_cov
 
-    def _get_rffs(self, X, return_vars):
-        """Return random Fourier features based on data X, as well as random
-        variables W and b.
-        """
-        np.random.seed(2)
-        N, D = X.shape
-        #print(X.shape)
-        if self.W_ is not None:
-            W, b = self.W_, self.b_
-        else:
-            W = np.random.normal(loc=0, scale=1, size=(self.rff_dim, D))
-            b = np.random.uniform(0, 2*np.pi, size=self.rff_dim)
-
-        B    = np.repeat(b[:, np.newaxis], N, axis=1)
-        norm = 1./ np.sqrt(self.rff_dim)
-        Z    = norm * np.sqrt(2) * np.cos(self.sigma * W @ X.T + B)
-        if return_vars:
-            return Z, W, b
-        return Z
 
     def _get_rvs(self, D):
         """On first call, return random variables W and b. Else, return cached
