@@ -25,8 +25,8 @@ if __name__ == '__main__':
     Y1 = data['Y']
 
     Datasize = 10000
-    Featsize = 10
-    Featsize2 = int(Datasize/10)
+    Featsize = 100
+    
 
     X = np.reshape(X1[:Datasize],(Datasize,1))
     Y = np.reshape(Y1[:Datasize],(Datasize,1))
@@ -80,9 +80,12 @@ if __name__ == '__main__':
         sq.append(r)        
         tp += interval
 
-
+    #RFF calculation
+    t1 = time.time()
     R = RFFGaussianProcessRegressor(rff_dim=Featsize,sigma=0.2)
     R.fit(X,Y)
+    t2 = time.time()
+    print("RFF overhead:",t2-t1)
     t1 = time.time()
     TPS = np.reshape(testPoints[:numTP+1],(numTP+1,1))
     matrff,garbage = R.predict(TPS)
@@ -132,10 +135,11 @@ if __name__ == '__main__':
     print("RKHS time:\t",Trkhs,"\tR2 = ",R2rkhs,"\tavg err:",sum(Rdev)/len(Rdev))
     print("Probpy time:\t",Tprob,"\tR2 = ",R2probpy,"\tavg err:",sum(Pdev)/len(Pdev))
 
+    rffstr = 'RFF F=' + str(Featsize)
     plt.plot(testPoints,sq, label = 'Ideal Curve')
     plt.plot(testPoints,cond, label = 'RKHS Curve')
     plt.plot(testPoints,Probpy, label = 'Proobpy Curve')
-    plt.plot(testPoints,matrff, label = 'RFF')    
+    plt.plot(testPoints,matrff, label = rffstr )    
     plt.legend()
     plt.show()
 
