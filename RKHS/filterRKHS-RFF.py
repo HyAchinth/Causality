@@ -124,7 +124,7 @@ if choice == 0:
 else:
     X1 = np.reshape(Y[:Datasize],(Datasize,1))
 Y1 = np.reshape(Z[:Datasize],(Datasize,1))
-Featsize = 10
+Featsize = 100
 t1 = time.time()
 R = RFFGaussianProcessRegressor(rff_dim=Featsize,sigma=0.2)
 R.fit(X1,Y1)

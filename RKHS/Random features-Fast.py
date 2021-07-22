@@ -18,13 +18,14 @@ testMin = -10
 testMax = 10
 
 if __name__ == '__main__':
+    Datasize = 1000
+    
     path = '../models/Cprobdata.csv'
     d = getData.DataReader(path)
-    data = d.read()        
+    data = d.read()[:Datasize]        
     X1 = data['X']
     Y1 = data['Y']
 
-    Datasize = 10000
     Featsize = 100
     
 
@@ -38,8 +39,8 @@ if __name__ == '__main__':
     s = 0.2 #sigma value for RKHS
     
     t1 = time.time()
-    r1 = RKHS(X1,kparms=[s])
-    r2 = RKHS(Y1,kparms=[s])
+    r1 = RKHS(X1[:Datasize],kparms=[s])
+    r2 = RKHS(Y1[:Datasize],kparms=[s])
     t2 = time.time()
     Trkhs += (t2-t1)
 
