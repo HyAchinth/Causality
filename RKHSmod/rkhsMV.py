@@ -79,7 +79,7 @@ class RKHS:
         #print('scalevol = ', scale**self.D * self.N)
         #print('volume = ', vol)
         #print('targetvol = ', targetvol)
-        print('scale = ', scale)
+        #print('scale = ', scale)
         cS = np.zeros(shape=c.shape)
         #print('c = ')
         for i in range(self.D):

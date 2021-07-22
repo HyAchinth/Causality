@@ -71,7 +71,8 @@ def m(x,r1,r2):
     for i in range(size):        
         sum1 += r1.K(x,r1.X[i]) 
         sum2 += r1.K(x,r1.X[i]) * r2.X[i]
-    
+    if sum1 ==0:
+        return 0
     return sum2/sum1
 
 def residual(r1,r2):

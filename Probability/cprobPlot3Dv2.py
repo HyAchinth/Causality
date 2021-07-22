@@ -210,9 +210,8 @@ for i in range(tries):
         r1 = RKHS(FilterData,sigmas = [0.2],includeVars=['C'],s=smoothness)
         r2 = RKHS(FilterData,sigmas = [0.2],includeVars=['A'],s=smoothness)
         
-        pred = m(t[1],r1,r2)
-
-        print("A, B, C=",float(pred),t[0],t[1])
+        pred = m(t[1],r1,r2)     
+        #print("A, B, C=",float(pred),t[0],t[1])
         fp_est.append(float(pred))
         xt4.append(t[0])
         yt4.append(t[1])
@@ -255,6 +254,7 @@ for i in range(tries):
     R2_jp = 1 - totalErr_jp / ssTot
     R2_ps = 1 - totalErr_ps / ssTot
     R2_fp = 1 - totalErr_fp / ssTot
+    print(totalErr_fp)
     #print('R2 JP =', R2_jp)
     #print('R2 PS =', R2_ps)
     print('JP:')
@@ -307,39 +307,39 @@ fig = plt.figure()
 x = np.array(xt1)
 y = np.array(yt1)
 z = np.array(zt1)
-print('x, y, z 1 =', len(x), len(y), len(z))
+
 
 my_cmap = plt.get_cmap('hot')
 ax = fig.add_subplot(221, projection='3d')
+ax.view_init(elev = 40, azim = -75)
 ax.plot_trisurf(x, y, z, cmap = my_cmap)
 
 #fig = plt.figure()
 x = np.array(xt2)
 y = np.array(yt2)
 z = np.array(zt2)
-print('x, y, z 2 =', len(x), len(y), len(z))
+
 my_cmap = plt.get_cmap('hot')
 ax = fig.add_subplot(222, projection='3d')
+ax.view_init(elev = 40, azim = -75)
 ax.plot_trisurf(x, y, z, cmap = my_cmap)
 
 x = np.array(xt3)
 y = np.array(yt3)
 z = np.array(zt3)
-print('x, y, z 3 =', len(x), len(y), len(z))
+
 my_cmap = plt.get_cmap('hot')
 ax = fig.add_subplot(223, projection='3d')
+ax.view_init(elev = 40, azim = -75)
 ax.plot_trisurf(x, y, z, cmap = my_cmap)
 
 x = np.array(xt4)
 y = np.array(yt4)
 z = np.array(zt4)
-print(x[:10])
-print(z[:10])
-print('x, y, z 4 =', len(x), len(y), len(z))
 my_cmap = plt.get_cmap('hot')
 ax = fig.add_subplot(224, projection='3d')
+ax.view_init(elev = 40, azim = -75)
 ax.plot_trisurf(x, y, z, cmap = my_cmap)
-
 
 #ax.scatter(x, y, z, c=z, cmap='viridis', linewidth=0.5);
 plt.show()
