@@ -53,3 +53,4 @@ class RKHS:
         else:
             # Use the user-provided method
             return self.f(x, self.X, self.kparms)
+

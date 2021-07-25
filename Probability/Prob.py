@@ -652,8 +652,11 @@ class ProbSpace:
                 # Nothing to conditionalize on.  We can just return the selected variable
                 # from the filtered distribution
                 filtSpace = self.SubSpace(filtSpecs, density = self.density, power = self.power, minPoints = 100, maxPoints = sqrt(self.N))
+                if filtSpace.N > 0:
                 #print('filtspace.N, parentQuery = ', filtSpace.N, filtSpace.parentQuery)
-                outPDF = filtSpace.distr(rvName)
+                    outPDF = filtSpace.distr(rvName)
+                else:
+                    outPDF = None
             else:
                 # Conditionalize on all indicated variables. I.e.,
                 # SUM(P(filteredY | Z=z) * P(Z=z)) for all z in Z.

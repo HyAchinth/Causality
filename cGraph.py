@@ -542,7 +542,6 @@ class cGraph:
             if d == source:
                 return False
             return True
-backdoorSet
         pathNodes = {}
         vg = networkx.subgraph_view(self.g, filter_edge=includeEdge)
         for parent in parents:

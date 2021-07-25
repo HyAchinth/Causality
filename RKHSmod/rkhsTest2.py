@@ -74,7 +74,7 @@ if __name__ == '__main__':
     X = data['X']
     expmean = sum(X) / len(X)
     traces = []
-    dataSizes = [50, 100, 1000, 10000, 100000]
+    dataSizes = [10, 50, 100, 1000, 10000, 100000]
     errs = {}
     maxDeviations = {}
     avgDeviations = {}
@@ -98,6 +98,7 @@ if __name__ == '__main__':
         tp += interval
     delta = 2
     start = time.time()
+    evals = 0
     for size in dataSizes:
         # Choose a reasonable sigma based on data size.
         sigma = 1 / log(size, 4)
@@ -111,10 +112,11 @@ if __name__ == '__main__':
         for i in range(len(testPoints)):
             p = testPoints[i]
             fp = r1.F(p)
+            evals += 1
             fs.append(fp)
             fc = 0
-            if p > 0 and p < 1:
-                fc = r3.F(p)
+            fc = r2.F(p)
+            evals += 1
             fsc.append(fc)
             tfp = tfs[i]
             ctfp = ctfs[i]
@@ -136,18 +138,22 @@ if __name__ == '__main__':
     print('Maximum Deviation = ', maxDeviations)
     print('Means = ', means, expmean)
     end = time.time()
-    print('elapsed = ', end - start)
+    duration = end - start
+    print('elapsed = ', duration)
+    print('evaluations = ', evals)
+    print('elapsed per eval = ', duration / evals)
     for t in range(len(traces)):
         fs = traces[t]
         size = dataSizes[int(t/2)] # traces are alternately pdf and cdf
         if t%2 == 0:
+            continue
             label = 'pdf(X)-size=' + str(size)
             linestyle = 'solid'
         else:
             label = 'cdf(X)-size=' + str(size)
             linestyle = 'dashed'
         plt.plot(testPoints, fs, label=label, linestyle=linestyle)
-    plt.plot(testPoints, tfs, label='testPDF(x)', color='#000000', linewidth=3, linestyle='solid')
+    #plt.plot(testPoints, tfs, label='testPDF(x)', color='#000000', linewidth=3, linestyle='solid')
     plt.plot(testPoints, ctfs, label='testCDF(x)', color='#000000', linewidth=3, linestyle='dotted')
     plt.legend()
     plt.show()

@@ -18,10 +18,10 @@ import numpy as np
 from matplotlib import cm
 from RKHSmod.rkhsMV import RKHS
 from math import log, tanh, sqrt, sin, cos
+from numpy.random import *
 
 tries = 10
 datSize = 1000
-condPoints = 10
 lim = 3
 # Arg format is <dims> <datSize> <tries>
 if len(sys.argv) > 1:
@@ -36,7 +36,11 @@ if len(sys.argv) > 4:
     condPoints = int(sys.argv[4])
 if len(sys.argv) > 5:
     lim = int(sys.argv[5])
-print('dims, datSize, tries, condPts, lim = ', dims, datSize, tries, condPoints, lim)
+#print('dims, datSize, tries, lim = ', dims, datSize, tries, lim)
+numTests = 200
+print('Test Limit = ', lim, 'standard deviations from mean')
+print('Dimensions = ', dims, '.  Conditionals = ', dims - 1)
+print('Number of points to evaluate = ', numTests)
 
 test = 'models/nCondition.py'
 
@@ -54,16 +58,13 @@ ps_results = []
 jp_run = []
 ps_run = []
 for i in range(tries):
+    print('\nRun', i+1)
     sdg = synthDataGen.run(test, datSize)
     d = getData.DataReader(datFileName)
     data = d.read()
     prob = ProbSpace(data)
-    print('Test Limit = ', lim, 'standard deviations from mean')
-    print('Dimensions = ', dims, '.  Conditionals = ', dims - 1)
-    print('Number of points to test for each conditional = ', condPoints)
+
     N = prob.N
-    evalpts = int(sqrt(N))
-    print('JPROB points for mean evaluation = ', evalpts)
     vars = prob.fieldList
     cond = []
     # Get the conditional variables
@@ -75,12 +76,6 @@ for i in range(tries):
     # we would use A3.
     target = 'A' + str(dims)
 
-    amean = prob.E(target)
-    astd = prob.distr(target).stDev()
-    amin = amean - lim * astd
-    arange = lim * astd - lim * -astd
-    aincr = arange / (evalpts - 1)
-    #print('A: mean, std, range, incr = ', amean, astd, arange, aincr)
     smoothness=1.0
     R1 = RKHS(prob.ds, delta=None, includeVars=[target] + cond[:dims-1], s=smoothness)
     R2 = RKHS(prob.ds, delta=None, includeVars=cond[:dims-1], s=smoothness)
@@ -91,30 +86,20 @@ for i in range(tries):
     totalErr_ps = 0
     conds = len(cond)
     tps = []
-    numTests = condPoints**(dims-1)
     evaluations = 0
     means = [prob.E(c) for c in cond]
     stds = [prob.distr(c).stDev() for c in cond]
     minvs = [means[i] - stds[i] * lim for i in range(len(means))]
-    incrs = [(std * lim - std * -lim) / (condPoints-1) for std in stds]
-    #print('cond = ', cond)
-    #print('means', means)
-    #print('stds = ', stds)
-    #print('amean = ', amean)
-    #print('astd = ', astd)
+    maxvs = [means[i] + stds[i] * lim for i in range(len(means))]
+
     # Generate the test points
     for i in range(numTests):
         tp = []
         for j in range(dims-1):
-            minv = minvs[j]
-            incr = incrs[j]
-            mod = condPoints**(dims - 1 - j - 1)
-            #print('mod = ', mod, j)
-            p = minv + int(i/mod)%condPoints * incr
-            tp.append(p)
-        tps.append(tp)
+            v = uniform(minvs[j], maxvs[j])
+            tp.append(v)
+        tps.append(tp)      
 
-    #print('Testpoints = ', tps)
     tnum = 0
     ssTot = 0 # Total sum of squares for R2 computation
     cmprs = []
@@ -123,51 +108,26 @@ for i in range(tries):
     # Generate the target values for comparison
     for t in tps:
         cmpr1 = tanh(t[0])
-        #cmpr1 = abs(t[0])**1.1
         cmpr2 = sin(t[1]) if dims > 2 else 0
-        #cmpr2 = -abs(t[1])**.9 if dims > 2 else 0
         cmpr3 = tanh(t[2]) if dims > 3 else 0
         cmpr4 = cos(t[3]) if dims > 4 else 0
         cmpr5 = t[4]**2 if dims > 5 else 0
         cmprL = [cmpr1, cmpr2, cmpr3, cmpr4, cmpr5]
         cmpr = sum(cmprL[:dims - 1])
         cmprs.append(cmpr)
-    #print('Testing JPROB')
     jp_start = time.time()
     for t in tps:
         tnum += 1
         condVals = t
         evaluations += 1
-        zval2 = R2.F(condVals)
-        #print('zval2 = ', zval2)
-        sumYP = 0
-        sumP = 0
-        if tnum%100 == 0:
-            print('JPROB: tests ', tnum, '/', len(tps))
-        for i in range(evalpts):
-            evalpt = amin + aincr * i
-            evaluations += 1
-            zval1 = R1.F([evalpt]+condVals)
-            if zval2 == 0:
-                y_x = 0.0
-            else:
-                y_x = zval1 / zval2
-            sumYP += y_x * evalpt
-            sumP += y_x
-            #cmpr = tanh(v2val)
-            #cmpr = sin(v2val) + abs(v3val)**1.1
-        mean = sumYP/sumP if sumP > 0 else 0
+        mean = R2.condE(target, condVals)
         jp_est.append(mean)
     jp_end = time.time()
-    #print('Testing PS')
     ps_start = time.time()
     tnum = 0
     for t in tps:
         tnum += 1
-        if tnum%100 == 0:
-            print('DPROB: tests ', tnum, '/', len(tps))
         try:
-            #psy_x = prob.E(v1, [(v2, v2val - .1 * v2std, v2val + .1 * v2std) , (v3, v3val - .1 * v3std, v3val + .1 * v3std)])
             condspec = []
             for c in range(dims-1):
                 condVar = cond[c]

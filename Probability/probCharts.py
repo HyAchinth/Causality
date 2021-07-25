@@ -62,8 +62,12 @@ def plot(distDict):
     plt.suptitle("PDFs of all variables", fontsize=13, fontweight=0, color='black', style='italic', verticalalignment='top', horizontalalignment='center', y=.98)
     vcenter = math.floor(rows / 2)
     hcenter = math.floor(cols / 2)
-    axs[rows-1, hcenter].set_xlabel('x', labelpad = 15, ha='center', va='bottom', fontsize=13, fontweight='bold')
-    axs[vcenter, 0].set_ylabel('P(X=x)', labelpad = 15, ha='left', va='center', rotation='vertical', fontsize = 13, fontweight='bold')
+    if rows > 1:
+        axs[rows-1, hcenter].set_xlabel('x', labelpad = 15, ha='center', va='bottom', fontsize=13, fontweight='bold')
+        axs[vcenter, 0].set_ylabel('P(X=x)', labelpad = 15, ha='left', va='center', rotation='vertical', fontsize = 13, fontweight='bold')
+    else:
+        axs[hcenter].set_xlabel('x', labelpad = 15, ha='center', va='bottom', fontsize=13, fontweight='bold')
+        axs[0].set_ylabel('P(X=x)', labelpad = 15, ha='left', va='center', rotation='vertical', fontsize = 13, fontweight='bold')
     for axis in axs.flat:
         # Same limits for everybody!
         axis.label_outer()

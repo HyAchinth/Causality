@@ -27,7 +27,7 @@ RAW_EQUATIONS = []
 MAX_DIFFICULTY = 0
 
 # Input file name should typically have a .py extension
-def run(semFileName, samples=1000, maxDifficulty=0, reset=False):
+def run(semFileName, samples=1000, maxDifficulty=0, reset=False, quiet=False):
     global VALIDATION, NOISES, NOISE_COUNT, COEFS, COEF_COUNT, CURR_EQUATION, RAW_EQUATIONS
     global smallestStd, largestStd, smallestCoef, largestCoef, MAX_DIFFICULTY
     if not RAW_EQUATIONS:
