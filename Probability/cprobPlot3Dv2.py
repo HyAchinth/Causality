@@ -150,25 +150,25 @@ for i in range(tries):
         tnum += 1
         condVals = t
         evaluations += 1
-        zval2 = R2.F(condVals, cumulative=cumulative)
+        mean = R2.condE(target, condVals)
         #print('zval2 = ', zval2)
-        sumYP = 0
-        sumP = 0
-        if tnum%100 == 0:
-            print('tests ', tnum, '/', len(tps))
-        for i in range(evalpts):
-            evalpt = amin + aincr * i
-            evaluations += 1
-            zval1 = R1.F([evalpt]+condVals, cumulative=cumulative)
-            if zval2 == 0:
-                y_x = 0.0
-            else:
-                y_x = zval1 / zval2
-            sumYP += y_x * evalpt
-            sumP += y_x
-            #cmpr = tanh(v2val)
-            #cmpr = sin(v2val) + abs(v3val)**1.1
-        mean = sumYP/sumP if sumP > 0 else 0
+        # sumYP = 0
+        # sumP = 0
+        # if tnum%100 == 0:
+        #     print('tests ', tnum, '/', len(tps))
+        # for i in range(evalpts):
+        #     evalpt = amin + aincr * i
+        #     evaluations += 1
+        #     zval1 = R1.F([evalpt]+condVals, cumulative=cumulative)
+        #     if zval2 == 0:
+        #         y_x = 0.0
+        #     else:
+        #         y_x = zval1 / zval2
+        #     sumYP += y_x * evalpt
+        #     sumP += y_x
+        #     #cmpr = tanh(v2val)
+        #     #cmpr = sin(v2val) + abs(v3val)**1.1
+        # mean = sumYP/sumP if sumP > 0 else 0
         jp_est.append(mean)
         xt2.append(t[0])
         yt2.append(t[1])
