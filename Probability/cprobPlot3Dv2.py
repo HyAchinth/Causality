@@ -22,7 +22,7 @@ from RKHSmod.rkhsMV import RKHS
 from RKHS.Condtest2 import m
 from math import log, tanh, sqrt, sin, cos
 
-tries = 1
+tries = 5
 datSize = 200
 # Arg format is  <datSize>
 dims = 3

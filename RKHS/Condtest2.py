@@ -205,8 +205,8 @@ if __name__ == '__main__':
 
         for i in range(numTP + 1):
             testPoints.append(tp)   
-            ans = evalYx(tp,r1,r2,choice[j],e)
-            #ans = m(tp,r1,r2)
+            #ans = evalYx(tp,r1,r2,choice[j],e)
+            ans = m(tp,r1,r2)
             if ans != 0:
                 cond.append(ans)
             elif i== 0:

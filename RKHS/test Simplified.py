@@ -125,8 +125,8 @@ print('RFF(N/10)    time taken :',str(RFFtime2),'  \tAverage Error: ',str(sum(RF
 RFFstring = 'RFF curve, num(F) = ' + str(Featsize)
 RFFstring2 = 'RFF curve, num(F) = N/10 =' + str(Featsize2)
 
-plt.plot(testPoints,y_mean, label = RFFstring)
-plt.plot(testPoints,y_mean2, label = RFFstring2)
+#plt.plot(testPoints,y_mean, label = RFFstring)
+#plt.plot(testPoints,y_mean2, label = RFFstring2)
 plt.plot(testPoints,rkhsEX, label = 'RKHS curve-E(X|Y=y)')
 
 plt.plot(testPoints,probpy, label = 'Probpy curve')
