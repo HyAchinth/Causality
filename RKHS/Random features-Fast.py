@@ -1,5 +1,5 @@
 #Implementation of Random features and comparision with kernel methods
-#from RKHS.filterRKHS import RSqerr, Sqmean
+
 import numpy as np
 import sys
 if '.' not in sys.path:
