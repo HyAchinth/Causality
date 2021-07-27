@@ -153,9 +153,9 @@ R2probpy = 1 - sum(PSqerr)/sum(Sqmean)
 R2rff = 1 - sum(FSqerr)/sum(Sqmean)
 
 print("Filtered Datasize:",filterlen)
-print("Filter-RKHS\tAverage Error:",sum(Rdev)/len(Rdev),"\tR2 error:",R2rkhs,"\ttime:",Rtime)
-print("ProbSpace \tAverage Error:",sum(Pdev)/len(Pdev),"\tR2 error:",R2probpy,"\ttime:",Ptime)
-print("Filter-RFF \tAverage Error:",sum(Fdev)/len(Fdev),"\tR2 error:",R2rff,"\ttime:",Trff)
+print("Filter-RKHS\tAverage Error:",sum(Rdev)/len(Rdev),"\tR2 :",R2rkhs,"\ttime:",Rtime)
+print("ProbSpace \tAverage Error:",sum(Pdev)/len(Pdev),"\tR2 :",R2probpy,"\ttime:",Ptime)
+print("Filter-RFF \tAverage Error:",sum(Fdev)/len(Fdev),"\tR2 :",R2rff,"\ttime:",Trff)
 
 if choice == 0:
     labelstr = 'Filter-RKHS Z|X,Y='+str(conditional)
