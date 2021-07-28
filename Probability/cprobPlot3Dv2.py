@@ -207,8 +207,8 @@ for i in range(tries):
         filterlen = len(C)
         s = 0.2 #sigma       
 
-        r1 = RKHS(FilterData,sigmas = [0.2],includeVars=['C'],s=smoothness)
-        r2 = RKHS(FilterData,sigmas = [0.2],includeVars=['A'],s=smoothness)
+        r1 = RKHS(FilterData,includeVars=['C'])
+        r2 = RKHS(FilterData,includeVars=['A'])
         
         pred = m(t[1],r1,r2)     
         #print("A, B, C=",float(pred),t[0],t[1])
