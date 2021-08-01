@@ -26,7 +26,7 @@ class UPROB:
         self.R2 = None                      # cached rkhsMV class2
 
 
-    def CondP(self, Vals,K = None,minPoints = None,maxPoints = None):
+    def condP(self, Vals,K = None,minPoints = None,maxPoints = None):
         #Vals is a list of (x1,x2....xn) such that P(X1=x1|X2=x2.....), same UI as rkhsmv
         if(K != None):
             self.k = K
@@ -59,25 +59,41 @@ class UPROB:
         else:
             return None
 
-    def CondE(self, Vals,K = None,minPoints = None,maxPoints = None):
+    def condE(self,target, Vals,K = None,minPoints = None,maxPoints = None):
         #Vals is a list of (x1,x2....xn) such that E(Y|X1=x1,X2=x2.....), same UI as rkhsmv
         if(K != None):
             self.k = K
         filter_len = floor((len(self.includeVars)+1)*self.k*0.01)
-        filter_vars = self.includeVars[-filter_len:]
-        filter_vals = Vals[-filter_len:]
+        if(filter_len !=0):
+            filter_vars = self.includeVars[-filter_len:]
+            filter_vals = Vals[-filter_len:]
+        else:
+            filter_vars = []
+            filter_vals = []
 
+        # print("filter len",filter_len)
+        # print("filter vars:",filter_vars)
+        #print("include vars:",self.includeVars[:-filter_len])
         if(self.R2==None or self.R2.varNames != self.includeVars[:-filter_len]):
-            P = ProbSpace(self.data)
-            filter_data = []
-            for i in range(filter_len):
-                x = (filter_vars[i],filter_vals[i])
-                filter_data.append(x)                    
-            FilterData, parentProb, finalQuery = P.filter(filter_data,minPoints,maxPoints)
-            self.R2 = RKHS(FilterData,includeVars=self.includeVars[:-filter_len],delta=self.delta,s=self.s)
+            if(filter_len != 0):
+                P = ProbSpace(self.data)
+                filter_data = []
+                for i in range(filter_len):
+                    x = (filter_vars[i],filter_vals[i])
+                    filter_data.append(x)                    
+                FilterData, parentProb, finalQuery = P.filter(filter_data,minPoints,maxPoints)
+                print("filtered datapoints:",len(FilterData['B']))
+                print("include vars:",self.includeVars[:-filter_len])
+                self.R2 = RKHS(FilterData,includeVars=self.includeVars[1:-filter_len],delta=self.delta,s=self.s)            
+            else:    
+                self.R2 = RKHS(self.data,includeVars=self.includeVars[1:],delta=self.delta,s=self.s)
         
-        return self.R2.condE(self.includeVars[0],Vals[:-filter_len])
-    
+        #print("uprob target:",target,"Vals:",Vals)
+        if(filter_len !=0):
+            return self.R2.condE(target,Vals[:-filter_len])
+        else:
+            return self.R2.condE(target, Vals)
+
         
 
 

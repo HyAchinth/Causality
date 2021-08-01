@@ -1,6 +1,5 @@
-import sys
-
 import numpy
+import sys
 sys.path.append('.')
 sys.path.append('../')
 from Probability.Prob import *
