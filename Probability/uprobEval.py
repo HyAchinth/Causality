@@ -25,11 +25,11 @@ from numpy.random import *
 
 from Uprob import UPROB
 
-tries = 3
+tries = 10
 datSize = 10000
 lim = 3
-dims = 6
-K = 25
+dims = 5
+K = 75
 # Arg format is <dims> <datSize> <tries> <K>
 if len(sys.argv) > 1:
     dims = int(sys.argv[1])

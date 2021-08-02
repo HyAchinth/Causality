@@ -51,23 +51,22 @@ class UPROB:
                 filter_data.append(x)                    
             FilterData, parentProb, finalQuery = P.filter(filter_data,minPoints,maxPoints)
             self.R1 = RKHS(FilterData,includeVars=self.includeVars[:-filter_len],delta=self.delta,s=self.s)
-        elif(self.R1==None):
-            print("run once")    
+        elif(self.R1==None):            
             self.R1 = RKHS(self.data,includeVars=self.includeVars,delta=self.delta,s=self.s)
-        elif(self.R1.varNames != self.includeVars):
-            print("run twice")
+
+        elif(self.R1.varNames != self.includeVars):            
             self.R1 = RKHS(self.data,includeVars=self.includeVars,delta=self.delta,s=self.s)
 
         if(filter_len != 0):                
-            p2 = self.R1.condP(Vals[:-filter_len])
-            if p2>0:
-                return p2
+            p = self.R1.condP(Vals[:-filter_len])
+            if p>0:
+                return p
             else:
                 return None
         else:
-            p2 = self.R1.condP(Vals)
-            if p2>0:
-                return p2
+            p = self.R1.condP(Vals)
+            if p>0:
+                return p
             else:
                 return None
 
