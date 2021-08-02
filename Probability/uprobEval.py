@@ -9,7 +9,9 @@ sys.path.append('.')
 sys.path.append('../')
 sys.path.append('./')
 #import rv
-from synth import getData, synthDataGen
+
+import synth.getData as getData
+import synth.synthDataGen as synthDataGen  
 #import independence
 import time
 import matplotlib.pyplot as plt
@@ -23,11 +25,12 @@ from numpy.random import *
 
 from Uprob import UPROB
 
-tries = 1
-datSize = 1000
+tries = 3
+datSize = 10000
 lim = 3
 dims = 6
-# Arg format is <dims> <datSize> <tries>
+K = 25
+# Arg format is <dims> <datSize> <tries> <K>
 if len(sys.argv) > 1:
     dims = int(sys.argv[1])
 if len(sys.argv) > 2:
@@ -35,7 +38,7 @@ if len(sys.argv) > 2:
 if len(sys.argv) > 3:
     tries = int(sys.argv[3])
 if len(sys.argv) > 4:
-    condPoints = int(sys.argv[4])
+    K = int(sys.argv[4])
 if len(sys.argv) > 5:
     lim = int(sys.argv[5])
 #print('dims, datSize, tries, lim = ', dims, datSize, tries, lim)
@@ -131,7 +134,7 @@ for i in range(tries):
     
     #JPROB Evaluation
     jp_start = time.time()
-    print("jprob conds:",tps[0])
+    
     for t in tps:
         tnum += 1
         condVals = t
@@ -147,7 +150,7 @@ for i in range(tries):
         tnum += 1
         condVals = t
         evaluations += 1
-        mean = U.condE(target, condVals,K=25)
+        mean = U.condE(target, condVals,K)
         up_est.append(mean)
     up_end = time.time()
     print("Uprob vars:",U.R2.varNames)
@@ -209,7 +212,7 @@ for i in range(tries):
     #print('   RMSE = ', rmse_jp)
     print('   R2 =', R2_jp)
 
-    print('UP:')
+    print('UP K='+str(U.k)+'%:')
     print('   R2 =', R2_up)
     jp_runtime = round((jp_end - jp_start) / evaluations * 1000, 5)
     up_runtime = round((up_end - up_start) / evaluations * 1000, 5)
@@ -243,7 +246,8 @@ jp_runt = np.mean(jp_run)
 up_runt = np.mean(up_run)
 ps_runt = np.mean(ps_run)
 error = min(max(0, (ps_avg - jp_avg)/ ps_avg), 1)
-print('dims, datSize, tries = ', dims, datSize, tries)
+
+print('dims, datSize, tries, K = ', dims, datSize, tries, K)
 print('Average R2: JP, UP, PS = ', jp_avg, up_avg, ps_avg)
 print('Min R2: JP, UP, PS = ', jp_min, up_min, ps_min)
 print('Max R2: JP, UP, PS = ', jp_max, up_max, ps_max)

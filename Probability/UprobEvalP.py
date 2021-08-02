@@ -9,23 +9,27 @@ import sys
 sys.path.append('.')
 sys.path.append('..')
 
-from synth import getData, synthDataGen
+# from synth import getData, synthDataGen
 
 import time
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from Probability.Prob import ProbSpace
+
+import synth.getData as getData
+import synth.synthDataGen as synthDataGen
+
 import numpy as np
 from matplotlib import cm
 from RKHSmod.rkhsMV import RKHS
 from Uprob import UPROB
 from math import log, tanh, sqrt, sin, cos
 
-tries = 1
+tries = 5
 datSize = 1000
 condPoints = 10
 lim = 3
-dims = 3
+dims = 5
 # Arg format is <dims> <datSize> <tries>
 if len(sys.argv) > 1:
     dims = int(sys.argv[1])
@@ -64,6 +68,7 @@ for i in range(tries):
     print('Number of points to test for each conditional = ', condPoints)
     N = prob.N
     evalpts = int(sqrt(N))
+    #evalpts = 10
     print('JPROB points for mean evaluation = ', evalpts)
     vars = prob.fieldList
     cond = []
@@ -86,7 +91,7 @@ for i in range(tries):
     R1 = RKHS(prob.ds, delta=None, includeVars=[target] + cond[:dims-1], s=smoothness)
     R2 = RKHS(prob.ds, delta=None, includeVars=cond[:dims-1], s=smoothness)
 
-    U =UPROB(prob.ds,includeVars=[target]+cond[:dims-1],k=50)
+    U =UPROB(prob.ds,includeVars=[target]+cond[:dims-1],k=25)
 
     evaluations = 0
     start = time.time()
@@ -171,7 +176,7 @@ for i in range(tries):
         for i in range(evalpts):
             evalpt = amin + aincr * i
             evaluations += 1            
-            y_x = U.condP([evalpt]+condVals,K=0)
+            y_x = U.condP([evalpt]+condVals,K=30)
             if(y_x == None):
                 y_x =0
             sumYP += y_x * evalpt
