@@ -24,6 +24,8 @@ class UPROB:
         self.k = k                          # % of variables to be filtered
         self.R1 = None                      # cached rkhsMV class
         self.R2 = None                      # cached rkhsMV class2
+        self.r1filters = None               # cached filter values in R1
+        self.r2filters = None               # cached filter values in R2
 
 
     def condP(self, Vals,K = None,minPoints = None,maxPoints = None):
@@ -34,27 +36,34 @@ class UPROB:
         if(filter_len !=0):
             filter_vars = self.includeVars[-filter_len:]
             filter_vals = Vals[-filter_len:]
+            include_vars = self.includeVars[:-filter_len]
         else:
             filter_vars = []
             filter_vals = []
+            include_vars = self.includeVars
         
         # print("filter vars:",filter_vars)
         # print("include vars:",self.includeVars[:-filter_len])
         # print(self.includeVars)
         
         #Calculating R1 
-        if(filter_len != 0):
+        if(filter_len != 0 and self.r1filters != filter_vals):
             P = ProbSpace(self.data)
             filter_data = []
             for i in range(filter_len):
                 x = (filter_vars[i],filter_vals[i])
                 filter_data.append(x)                    
             FilterData, parentProb, finalQuery = P.filter(filter_data,minPoints,maxPoints)
+            print("filter len",filter_len)
+            print("filtered datapoints:",len(FilterData['B']))
+            print("include vars:",self.includeVars[:-filter_len])
             self.R1 = RKHS(FilterData,includeVars=self.includeVars[:-filter_len],delta=self.delta,s=self.s)
+            self.r1filters = filter_vals
+
         elif(self.R1==None):            
             self.R1 = RKHS(self.data,includeVars=self.includeVars,delta=self.delta,s=self.s)
 
-        elif(self.R1.varNames != self.includeVars):            
+        elif(self.R1.varNames != include_vars):            
             self.R1 = RKHS(self.data,includeVars=self.includeVars,delta=self.delta,s=self.s)
 
         if(filter_len != 0):                
@@ -78,31 +87,34 @@ class UPROB:
         if(filter_len !=0):
             filter_vars = self.includeVars[-filter_len:]
             filter_vals = Vals[-filter_len:]
-            
+            include_vars = self.includeVars[1:-filter_len]
+
         else:
             filter_vars = []
             filter_vals = []       
+            include_vars = self.includeVars
         
         #print("filter vars:",filter_vars)
         #print("include vars:",self.includeVars[:-filter_len])
         #print("self:",self.R2.varNames,"cond",self.includeVars[:-filter_len])
                 
-        if(filter_len != 0):
+        if(filter_len != 0 and self.r2filters != filter_vals):
             P = ProbSpace(self.data)
             filter_data = []
             for i in range(filter_len):
                 x = (filter_vars[i],filter_vals[i])
                 filter_data.append(x)                    
             FilterData, parentProb, finalQuery = P.filter(filter_data,minPoints,maxPoints)
-            # print("filter len",filter_len)
-            # print("filtered datapoints:",len(FilterData['B']))
-            # print("include vars:",self.includeVars[:-filter_len])
-            self.R2 = RKHS(FilterData,includeVars=self.includeVars[1:-filter_len],delta=self.delta,s=self.s)            
+            print("filter len",filter_len)
+            print("filtered datapoints:",len(FilterData['B']))
+            print("include vars:",self.includeVars[:-filter_len])
+            self.R2 = RKHS(FilterData,includeVars=self.includeVars[1:-filter_len],delta=self.delta,s=self.s)
+            self.r2filters = filter_vals          
         
         elif(self.R2==None):
             self.R2 = RKHS(self.data,includeVars=self.includeVars[1:],delta=self.delta,s=self.s)
 
-        elif(self.R2.varNames != self.includeVars[1:]):
+        elif(self.R2.varNames != include_vars):
             self.R2 = RKHS(self.data,includeVars=self.includeVars[1:],delta=self.delta,s=self.s)
         
         if(filter_len !=0):
