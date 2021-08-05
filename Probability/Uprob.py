@@ -11,10 +11,10 @@ sys.path.append('../')
 
 from RKHSmod.rkhsMV import RKHS
 from Probability.Prob import ProbSpace
-from math import floor
+from math import ceil, floor
 
 class UPROB:
-    def __init__(self,data, includeVars = None, delta = 3, s=1.0,k=50):
+    def __init__(self,data, includeVars = None, delta = 3, s=1.0,k=50,rangeFactor = None):
         assert type(data) == type({}), "Error -- Data must be in the form of a dictionary varName -> [val1, val2, ... , valN]"
         
         self.data = data                    # data in the form of a dictionary
@@ -35,7 +35,7 @@ class UPROB:
             self.varNames = includeVars
             self.D = len(self.varNames)
         self.N = len(data[self.varNames[0]])
-        self.rangeFactor = None
+        self.rangeFactor = rangeFactor
 
 
 
@@ -45,13 +45,14 @@ class UPROB:
             self.k = K
         filter_len = floor((len(self.includeVars)-1)*self.k*0.01)
         dims = len(Vals)
-        self.rangeFactor = 0.8
+        if(self.rangeFactor==0):
+            self.rangeFactor = 0.05
         if(filter_len !=0):
             filter_vars = self.includeVars[-filter_len:]
             filter_vals = Vals[-filter_len:]
             include_vars = self.includeVars[:-filter_len]            
-            self.minPoints = floor(self.N**((dims-filter_len)/dims)*self.rangeFactor)
-            self.maxPoints = floor(self.N**((dims-filter_len)/dims)/self.rangeFactor)
+            self.minPoints = ceil(self.N**((dims-filter_len)/dims)*self.rangeFactor) + 20
+            self.maxPoints = ceil(self.N**((dims-filter_len)/dims)/self.rangeFactor)
             print("minpoints,maxpoints=",self.minPoints,self.maxPoints)
 
         else:
@@ -64,7 +65,24 @@ class UPROB:
         # print(self.includeVars)
         
         #Calculating R1 
-        if(filter_len != 0 and self.r1filters != filter_vals):
+        if(filter_len == (len(self.includeVars)-1)):
+            P = ProbSpace(self.data)
+            filter_data = []
+            for i in range(filter_len):
+                x = (filter_vars[i],filter_vals[i])
+                filter_data.append(x)                    
+            FilterData, parentProb, finalQuery = P.filter(filter_data,self.minPoints,self.maxPoints)
+            # print("filter len",filter_len)
+            print("filtered datapoints:",len(FilterData['B']))
+            print("include vars:",self.includeVars[:-filter_len])
+            self.R1 = RKHS(FilterData,includeVars=self.includeVars[:1],delta=self.delta,s=self.s)
+            
+            return self.R1.P(Vals[0])
+            self.r1filters = filter_vals
+        
+        
+        
+        elif(filter_len != 0 and self.r1filters != filter_vals):
             P = ProbSpace(self.data)
             filter_data = []
             for i in range(filter_len):
@@ -101,14 +119,17 @@ class UPROB:
         if(K != None):
             self.k = K
         filter_len = floor((len(self.includeVars)-1)*self.k*0.01)
-        dims = len(Vals)
-        self.rangeFactor = 0.1
+        dims = len(Vals) + 1
+        if(self.rangeFactor == None):
+            self.rangeFactor = 0.05
+        
+        
         if(filter_len !=0):
             filter_vars = self.includeVars[-filter_len:]
             filter_vals = Vals[-filter_len:]
             include_vars = self.includeVars[1:-filter_len]
-            self.minPoints = floor(self.N**((dims-filter_len)/dims)*self.rangeFactor)
-            self.maxPoints = floor(self.N**((dims-filter_len)/dims)/self.rangeFactor)
+            self.minPoints = ceil(self.N**((dims-filter_len)/dims)*self.rangeFactor)
+            self.maxPoints = ceil(self.N**((dims-filter_len)/dims)/self.rangeFactor)
             print("minpoints,maxpoints=",self.minPoints,self.maxPoints)
 
         else:
@@ -120,11 +141,28 @@ class UPROB:
         #print("include vars:",self.includeVars[:-filter_len])
         #print("self:",self.R2.varNames,"cond",self.includeVars[:-filter_len])
                 
-        if(filter_len != 0 and self.r2filters != filter_vals):
+        
+        if(filter_len == (len(self.includeVars)-1) ):
+            self.minPoints += 20
+            P = ProbSpace(self.data)
+            filter_vars = self.includeVars[1:]
+            filter_vals = Vals            
+            filter_data = []
+            for i in range(filter_len):
+                x = (filter_vars[i],filter_vals[i])
+                filter_data.append(x)                    
+            print(self.minPoints,self.maxPoints)
+            FilterData, parentProb, finalQuery = P.filter(filter_data,self.minPoints,self.maxPoints)
+            X = FilterData[self.includeVars[0]]
+            return sum(X)/len(X)
+                
+        
+        elif(filter_len != 0 and self.r2filters != filter_vals):
             P = ProbSpace(self.data)
             filter_data = []
             for i in range(filter_len):
                 x = (filter_vars[i],filter_vals[i])
+                print(x)
                 filter_data.append(x)                    
             FilterData, parentProb, finalQuery = P.filter(filter_data,self.minPoints,self.maxPoints)
             # print("filter len",filter_len)

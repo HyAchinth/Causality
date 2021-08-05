@@ -72,16 +72,16 @@ def plot(sigma=1,min=-5,max=5,num=200,s=1):         #Test by plotting our F(X) v
     step = (max-min)/num
     #print(step)
     for i in np.arange(min,max+step,step):
-        ker.append(r.fsaw(i))            
+        ker.append(r.F(i,sigma))            
         xax.append(i)
-        gdf.append(sawtooth(i))
+        gdf.append(pdf(i))
 
-    # plt.plot(xax,ker,label = 'F(X),sigma='+str(sigma))
-    # plt.plot(xax,gdf,label = 'pdf(X),scale='+str(s), color= '#000000')
-    plt.plot(xax,ker,label = 'F(X)')
-    plt.plot(xax,gdf,label = 'sawtooth()', color= '#000000')
+    plt.plot(xax,ker,label = 'F(X),sigma='+str(sigma))
+    plt.plot(xax,gdf,label = 'pdf(X),scale='+str(s), color= '#000000')
+    # plt.plot(xax,ker,label = 'F(X)')
+    # plt.plot(xax,gdf,label = 'ideal()', color= '#000000')
     
     plt.legend()
     plt.show()
 
-plot(0.2,-5,5,200,1)
+plot(0.6,-5,5,200,1)

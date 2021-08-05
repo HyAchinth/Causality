@@ -26,10 +26,11 @@ from numpy.random import *
 from Uprob import UPROB
 
 tries = 10
-datSize = 10000
+datSize = 1000
 lim = 3
 dims = 5
-K = 75
+K = 25
+RF = 0.05
 # Arg format is <dims> <datSize> <tries> <K>
 if len(sys.argv) > 1:
     dims = int(sys.argv[1])
@@ -87,7 +88,7 @@ for i in range(tries):
     R1 = RKHS(prob.ds, delta=None, includeVars=[target] + cond[:dims-1], s=smoothness)
     R2 = RKHS(prob.ds, delta=None, includeVars=cond[:dims-1], s=smoothness)
 
-    U =UPROB(prob.ds,includeVars=[target]+cond[:dims-1],k=50)
+    U =UPROB(prob.ds,includeVars=[target]+cond[:dims-1],k=50,rangeFactor=RF)
 
     print("target=",target,"conds=",cond[:dims-1])
 
@@ -153,8 +154,8 @@ for i in range(tries):
         mean = U.condE(target, condVals,K)
         up_est.append(mean)
     up_end = time.time()
-    print("Uprob vars:",U.R2.varNames)
-
+    if U.R2 != None:
+        print("Uprob vars:",U.R2.varNames)
     #ProbSpace Evaluation
     ps_start = time.time()
     tnum = 0
@@ -247,7 +248,7 @@ up_runt = np.mean(up_run)
 ps_runt = np.mean(ps_run)
 error = min(max(0, (ps_avg - jp_avg)/ ps_avg), 1)
 
-print('dims, datSize, tries, K = ', dims, datSize, tries, K)
+print('dims, datSize, tries, K, RF = ', dims, datSize, tries, K, RF)
 print('Average R2: JP, UP, PS = ', jp_avg, up_avg, ps_avg)
 print('Min R2: JP, UP, PS = ', jp_min, up_min, ps_min)
 print('Max R2: JP, UP, PS = ', jp_max, up_max, ps_max)
