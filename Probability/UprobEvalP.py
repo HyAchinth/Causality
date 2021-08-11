@@ -29,9 +29,9 @@ tries = 1
 datSize = 1000
 condPoints = 10
 lim = 3
-dims = 4
+dims = 3
 k = 100
-RF = 0.05
+RF = 0.8
 # Arg format is <dims> <datSize> <tries>
 if len(sys.argv) > 1:
     dims = int(sys.argv[1])
@@ -276,7 +276,7 @@ jp_runt = np.mean(jp_run)
 up_runt = np.mean(up_run)
 ps_runt = np.mean(ps_run)
 error = min(max(0, (ps_avg - jp_avg)/ ps_avg), 1)
-print('dims, datSize, tries = ', dims, datSize, tries)
+print('dims, datSize, tries, K = ', dims, datSize, tries, k)
 print('Average R2: JP, UP, PS = ', jp_avg, up_avg, ps_avg)
 print('Min R2: JP, UP, PS = ', jp_min, up_min, ps_min)
 print('Max R2: JP, UP, PS = ', jp_max, up_max, ps_max)

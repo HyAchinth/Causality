@@ -651,7 +651,12 @@ class ProbSpace:
             if not condSpecs:
                 # Nothing to conditionalize on.  We can just return the selected variable
                 # from the filtered distribution
-                filtSpace = self.SubSpace(filtSpecs, density = self.density, power = self.power, minPoints = 100, maxPoints = sqrt(self.N))
+                dims = len(filtSpecs)+1
+                cdims = len(filtSpecs)
+                rangeFactor = 0.8
+                minPoints = self.N**((dims-cdims)/dims)*rangeFactor
+                maxPoints = self.N**((dims-cdims)/dims)/rangeFactor
+                filtSpace = self.SubSpace(filtSpecs, density = self.density, power = self.power, minPoints=minPoints, maxPoints=maxPoints)
                 if filtSpace.N > 0:
                 #print('filtspace.N, parentQuery = ', filtSpace.N, filtSpace.parentQuery)
                     outPDF = filtSpace.distr(rvName)
