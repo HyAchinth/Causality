@@ -25,10 +25,10 @@ from numpy.random import *
 
 from Uprob import UPROB
 
-tries = 3
-datSize = 10000
+tries = 5
+datSize = 1000
 lim = 3
-dims = 6    
+dims = 2    
 K = 100
 RF = 0.8
 # Arg format is <dims> <datSize> <tries> <K>

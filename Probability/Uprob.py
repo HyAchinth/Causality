@@ -142,10 +142,11 @@ class UPROB:
         if(K != None):
             self.k = K
         filter_len = floor((len(self.includeVars)-1)*self.k*0.01)
-        print("filter len",filter_len)
+        #print("filter len",filter_len)
         dims = len(Vals) + 1
         if(self.rangeFactor == None):
             self.rangeFactor = 0.8
+        minminpoints = 5
         
         
         if(filter_len !=0):
@@ -154,7 +155,7 @@ class UPROB:
             include_vars = self.includeVars[1:-filter_len]
             self.minPoints = self.N**((dims-filter_len)/dims)*self.rangeFactor
             self.maxPoints = self.N**((dims-filter_len)/dims)/self.rangeFactor
-            print("minpoints,maxpoints=",self.minPoints,self.maxPoints)
+            #print("minpoints,maxpoints=",self.minPoints,self.maxPoints)
 
         else:
             filter_vars = []
@@ -174,15 +175,15 @@ class UPROB:
             for i in range(filter_len):
                 x = (filter_vars[i],filter_vals[i])
                 filter_data.append(x)                    
-            print("minpoints,maxpoints:",self.minPoints,self.maxPoints)
+            #print("minpoints,maxpoints:",self.minPoints,self.maxPoints)
             FilterData, parentProb, finalQuery = P.filter(filter_data,self.minPoints,self.maxPoints)
             X = FilterData[self.includeVars[0]]
             if(len(X)<self.minPoints):
                 newk = ceil((((K*(dims-1)*0.01)-1)/(dims-1))*100) # update K =100 to K = 80
                 #newk = ceil(K - ((filter_len-1)/filter_len)*100) #update k = 100 to K = 20
-                print("not enough datapoints, newk=",newk)
+                #print("not enough datapoints, newk=",newk)
                 return self.condE(target, Vals, newk)
-            print(len(X))
+            #print(len(X))
             if(len(X)!=0):
                 return sum(X)/len(X)
             else:
@@ -194,17 +195,17 @@ class UPROB:
             filter_data = []
             for i in range(filter_len):
                 x = (filter_vars[i],filter_vals[i])
-                print(x)
+                #print(x)
                 filter_data.append(x)                    
             FilterData, parentProb, finalQuery = P.filter(filter_data,self.minPoints,self.maxPoints)
             # print("filter len",filter_len)
-            print("filtered datapoints:",len(FilterData['B']))
+            #print("filtered datapoints:",len(FilterData['B']))
             # print("include vars:",self.includeVars[:-filter_len])
             X = FilterData[self.includeVars[0]]
-            if(len(X)<self.minPoints):
+            if(len(X)<self.minPoints or len(X)<=minminpoints):
                 newk = ceil((((K*(dims-1)*0.01)-1)/(dims-1)) * 100)
                 #newk = ceil(((filter_len+1)/filter_len)*K)
-                print("not enough datapoints, newk=",newk)
+                #print("not enough datapoints, newk=",newk)
                 return self.condE(target, Vals, newk)
             self.R2 = RKHS(FilterData,includeVars=self.includeVars[1:-filter_len],delta=self.delta,s=self.s)
             self.r2filters = filter_vals          
