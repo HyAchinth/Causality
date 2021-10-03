@@ -36,6 +36,14 @@ class UPROB:
             self.D = len(self.varNames)
         self.N = len(data[self.varNames[0]])
         self.rangeFactor = rangeFactor
+        if(self.D > 4):
+            self.k = ceil(100/(self.D-1))
+            self.rangeFactor = 0.01
+            print(self.k, self.rangeFactor)
+        else:
+            self.k = 100
+            self.rangeFactor = 0.5
+        
 
 
 
@@ -139,9 +147,9 @@ class UPROB:
 
     def condE(self,target, Vals,K = None):
         #Vals is a list of (x1,x2....xn) such that E(Y|X1=x1,X2=x2.....), same UI as rkhsmv
-        if(K != None):
-            self.k = K
-        filter_len = floor((len(self.includeVars)-1)*self.k*0.01)
+        if(K == None):
+            K = self.k 
+        filter_len = floor((len(self.includeVars)-1)*K*0.01)
         #print("filter len",filter_len)
         dims = len(Vals) + 1
         if(self.rangeFactor == None):
@@ -181,7 +189,7 @@ class UPROB:
             if(len(X)<self.minPoints):
                 newk = ceil((((K*(dims-1)*0.01)-1)/(dims-1))*100) # update K =100 to K = 80
                 #newk = ceil(K - ((filter_len-1)/filter_len)*100) #update k = 100 to K = 20
-                #print("not enough datapoints, newk=",newk)
+                print("not enough datapoints, newk=",newk)
                 return self.condE(target, Vals, newk)
             #print(len(X))
             if(len(X)!=0):
@@ -198,9 +206,9 @@ class UPROB:
                 #print(x)
                 filter_data.append(x)                    
             FilterData, parentProb, finalQuery = P.filter(filter_data,self.minPoints,self.maxPoints)
-            # print("filter len",filter_len)
-            #print("filtered datapoints:",len(FilterData['B']))
-            # print("include vars:",self.includeVars[:-filter_len])
+            print("filter len",filter_len)
+            print("filtered datapoints:",len(FilterData['B']))
+            print("include vars:",self.includeVars[:-filter_len])
             X = FilterData[self.includeVars[0]]
             if(len(X)<self.minPoints or len(X)<=minminpoints):
                 newk = ceil((((K*(dims-1)*0.01)-1)/(dims-1)) * 100)

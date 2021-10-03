@@ -25,12 +25,12 @@ from numpy.random import *
 
 from Uprob import UPROB
 
-tries = 5
-datSize = 1000
+tries = 1
+datSize = 10000
 lim = 3
-dims = 2    
-K = 100
-RF = 0.8
+dims = 6    
+K = 25
+RF = 0.5
 # Arg format is <dims> <datSize> <tries> <K>
 if len(sys.argv) > 1:
     dims = int(sys.argv[1])
@@ -82,13 +82,13 @@ for i in range(tries):
             cond.append(var)
     # There is a target: 'A<dims>' for each conditional dimension.  So for 3D (2 conditionals),
     # we would use A3.
-    target = 'A' + str(dims)
+    target = 'A' + str(dims) 
 
     smoothness=1.0
     R1 = RKHS(prob.ds, delta=None, includeVars=[target] + cond[:dims-1], s=smoothness)
     R2 = RKHS(prob.ds, delta=None, includeVars=cond[:dims-1], s=smoothness)
 
-    U =UPROB(prob.ds,includeVars=[target]+cond[:dims-1],k=50,rangeFactor=RF)
+    U =UPROB(prob.ds,includeVars=[target]+cond[:dims-1],k=K,rangeFactor=RF)
 
     print("target=",target,"conds=",cond[:dims-1])
 
@@ -151,7 +151,7 @@ for i in range(tries):
         tnum += 1
         condVals = t
         evaluations += 1
-        mean = U.condE(target, condVals,K)
+        mean = U.condE(target, condVals)
         up_est.append(mean)
     up_end = time.time()
     if U.R2 != None:
