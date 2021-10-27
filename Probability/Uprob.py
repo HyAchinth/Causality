@@ -36,7 +36,12 @@ class UPROB:
             self.D = len(self.varNames)
         self.N = len(data[self.varNames[0]])
         self.rangeFactor = rangeFactor
-        if(self.D > 4):
+
+        #Automatic selction of K. When the datapoints are abundant, K=100 (DPROB) is utilized, else K is reduced to predominantly use JPROB (K=25 for example)
+
+        self.Ndim = self.N**(1/self.D)
+        self.tresh = 10
+        if(self.D > 4 and self.Ndim < self.tresh):
             self.k = ceil(100/(self.D-1))
             self.rangeFactor = 0.01
             print(self.k, self.rangeFactor)
@@ -213,7 +218,7 @@ class UPROB:
             if(len(X)<self.minPoints or len(X)<=minminpoints):
                 newk = ceil((((K*(dims-1)*0.01)-1)/(dims-1)) * 100)
                 #newk = ceil(((filter_len+1)/filter_len)*K)
-                #print("not enough datapoints, newk=",newk)
+                print("not enough datapoints, newk=",newk)
                 return self.condE(target, Vals, newk)
             self.R2 = RKHS(FilterData,includeVars=self.includeVars[1:-filter_len],delta=self.delta,s=self.s)
             self.r2filters = filter_vals          

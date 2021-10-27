@@ -26,9 +26,9 @@ from numpy.random import *
 from Uprob import UPROB
 
 tries = 1
-datSize = 10000
+datSize = 100000
 lim = 3
-dims = 6    
+dims = 5    
 K = 25
 RF = 0.5
 # Arg format is <dims> <datSize> <tries> <K>
