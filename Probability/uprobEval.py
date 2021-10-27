@@ -29,7 +29,7 @@ tries = 1
 datSize = 100000
 lim = 3
 dims = 5    
-K = 25
+K = 25 #Not used anymore as K is automatically calculated
 RF = 0.5
 # Arg format is <dims> <datSize> <tries> <K>
 if len(sys.argv) > 1:
